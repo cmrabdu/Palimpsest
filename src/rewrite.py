@@ -36,9 +36,25 @@ RÈGLES DE FORMATAGE — output = corps LaTeX UNIQUEMENT (sans \\documentclass n
 - Matrices : \\begin{pmatrix}...\\end{pmatrix}, \\begin{bmatrix}...\\end{bmatrix}
 - Vecteurs : \\vec{F}, produit vectoriel \\times, norme \\|...\\|
 - Dérivées : \\frac{d}{dt}, \\frac{\\partial}{\\partial x}, \\dot{x}, \\ddot{x}
-- Schémas simples (repères, corps libres, diagrammes de forces) : \\begin{tikzpicture}...\\end{tikzpicture} dans \\begin{figure}[h]\\centering
-- Figures impossibles à reproduire en TikZ : \\begin{figure}[h]\\centering\\fbox{\\textit{[Figure : description détaillée]}}\\end{figure}
-- Tableaux : \\begin{table}[h]\\centering\\begin{tabular}...\\end{tabular}\\end{table}
+
+TABLEAUX — RÈGLES STRICTES :
+- TOUJOURS utiliser tabularx avec \\textwidth pour la largeur : \\begin{tabularx}{\\textwidth}{|X|X|c|}
+- Colonnes larges (texte, descriptions) : type X (auto-ajuste)
+- Colonnes étroites (nombres, symboles) : type c, l ou r
+- Obligation d'envelopper dans \\begin{table}[H]\\centering...\\end{table}
+- Si le tableau est trop complexe ou large : envelopper dans \\begin{adjustbox}{max width=\\textwidth}
+
+FIGURES ET SCHÉMAS — RÈGLES STRICTES :
+- Schémas simples (repères, corps libres, diagrammes de forces, circuits) : OBLIGATOIREMENT en TikZ
+  \\begin{figure}[H]\\centering\\begin{tikzpicture}...\\end{tikzpicture}\\caption{...}\\end{figure}
+- Reproduire fidèlement : positions, directions des flèches, labels, angles, cotations
+- Pour les diagrammes de forces (bilan des efforts) : dessiner CHAQUE force comme un \\draw[->,thick] avec label
+- Pour les repères : axes x,y,z avec labels, origine marquée O
+- Figures trop complexes pour TikZ (photos, graphiques détaillés, courbes expérimentales) :
+  \\begin{figure}[H]\\centering
+  \\fbox{\\parbox{0.9\\textwidth}{\\textit{\\textbf{Figure N.N :} Description complète de la figure originale, incluant : axes, grandeurs représentées, tendances des courbes, valeurs remarquables, légendes.}}}
+  \\caption{...}\\end{figure}
+- NE JAMAIS simplement écrire "Figure 3.2 — ..." comme du texte. Toute figure DOIT être dans un environnement figure.
 - Texte normal : paragraphes LaTeX, \\textbf{} pour les définitions importantes
 
 Format de sortie STRICT :
@@ -81,9 +97,25 @@ RÈGLES DE FORMATAGE — output = corps LaTeX UNIQUEMENT (sans \\documentclass n
 - Matrices : \\begin{pmatrix}...\\end{pmatrix}, \\begin{bmatrix}...\\end{bmatrix}
 - Vecteurs : \\vec{F}, produit vectoriel \\times, norme \\|...\\|
 - Dérivées : \\frac{d}{dt}, \\frac{\\partial}{\\partial x}, \\dot{x}, \\ddot{x}
-- Schémas simples (repères, corps libres, diagrammes de forces) : \\begin{tikzpicture}...\\end{tikzpicture} dans \\begin{figure}[h]\\centering
-- Figures impossibles à reproduire en TikZ : \\begin{figure}[h]\\centering\\fbox{\\textit{[Figure : description détaillée]}}\\end{figure}
-- Tableaux : \\begin{table}[h]\\centering\\begin{tabular}...\\end{tabular}\\end{table}
+
+TABLEAUX — RÈGLES STRICTES :
+- TOUJOURS utiliser tabularx avec \\textwidth pour la largeur : \\begin{tabularx}{\\textwidth}{|X|X|c|}
+- Colonnes larges (texte, descriptions) : type X (auto-ajuste)
+- Colonnes étroites (nombres, symboles) : type c, l ou r
+- Obligation d'envelopper dans \\begin{table}[H]\\centering...\\end{table}
+- Si le tableau est trop complexe ou large : envelopper dans \\begin{adjustbox}{max width=\\textwidth}
+
+FIGURES ET SCHÉMAS — RÈGLES STRICTES :
+- Schémas simples (repères, corps libres, diagrammes de forces, circuits) : OBLIGATOIREMENT en TikZ
+  \\begin{figure}[H]\\centering\\begin{tikzpicture}...\\end{tikzpicture}\\caption{...}\\end{figure}
+- Reproduire fidèlement : positions, directions des flèches, labels, angles, cotations
+- Pour les diagrammes de forces (bilan des efforts) : dessiner CHAQUE force comme un \\draw[->,thick] avec label
+- Pour les repères : axes x,y,z avec labels, origine marquée O
+- Figures trop complexes pour TikZ (photos, graphiques détaillés, courbes expérimentales) :
+  \\begin{figure}[H]\\centering
+  \\fbox{\\parbox{0.9\\textwidth}{\\textit{\\textbf{Figure N.N :} Description complète de la figure originale, incluant : axes, grandeurs représentées, tendances des courbes, valeurs remarquables, légendes.}}}
+  \\caption{...}\\end{figure}
+- NE JAMAIS simplement écrire "Figure 3.2 — ..." comme du texte. Toute figure DOIT être dans un environnement figure.
 - Texte normal : paragraphes LaTeX, \\textbf{} pour les définitions importantes
 
 Format de sortie STRICT :

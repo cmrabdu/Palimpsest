@@ -134,21 +134,37 @@ async def get_job(job_id: str):
 
 
 @app.get("/api/jobs/{job_id}/download")
-async def download_result(job_id: str):
-    """Download the result — PDF if available, otherwise .tex."""
+async def download_result(job_id: str, fmt: str = "auto"):
+    """Download the result — PDF if available, otherwise .tex.
+
+    Query params:
+        fmt: "pdf", "tex", or "auto" (default: prefer PDF).
+    """
     if job_id not in jobs:
         return {"error": "Job not found."}
     job = jobs[job_id]
     if job["status"] != "done" or not job["output_path"]:
         return {"error": "Job not ready."}
     path = Path(job["output_path"])
-    if path.suffix == ".pdf":
-        media_type = "application/pdf"
-    elif path.suffix == ".tex":
-        media_type = "application/x-tex"
-    else:
-        media_type = "text/plain"
-    return FileResponse(path, filename=path.name, media_type=media_type)
+
+    # If user explicitly requests tex, or the output is already tex
+    if fmt == "tex":
+        tex_path = path.with_suffix(".tex") if path.suffix == ".pdf" else path
+        if tex_path.exists():
+            return FileResponse(tex_path, filename=tex_path.name, media_type="application/x-tex")
+
+    # Default: prefer PDF
+    if path.suffix == ".pdf" and path.exists():
+        return FileResponse(path, filename=path.name, media_type="application/pdf")
+    elif path.suffix == ".tex" and path.exists():
+        return FileResponse(path, filename=path.name, media_type="application/x-tex")
+
+    # Fallback: try the other format
+    alt = path.with_suffix(".pdf") if path.suffix == ".tex" else path.with_suffix(".tex")
+    if alt.exists():
+        media = "application/pdf" if alt.suffix == ".pdf" else "application/x-tex"
+        return FileResponse(alt, filename=alt.name, media_type=media)
+    return {"error": "Output file not found."}
 
 
 @app.websocket("/ws/{job_id}")

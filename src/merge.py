@@ -26,9 +26,12 @@ LATEX_PREAMBLE = r"""\documentclass[12pt,a4paper]{article}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta, calc, decorations.markings, angles, quotes, patterns}
 
-% Tableaux
+% Tableaux — tabularx pour auto-fit à la largeur de page
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{adjustbox}
 
 % Flottants
 \usepackage{float}

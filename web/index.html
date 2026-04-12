@@ -300,18 +300,18 @@
                 <label>Modèle de réécriture</label>
                 <select id="modelSelect">
                     <optgroup label="OpenAI — Best value">
-                        <option value="o4-mini" selected>o4-mini (~96% · $0.027/p)</option>
-                        <option value="gpt-4.1">GPT-4.1 (~96% · $0.041/p)</option>
-                        <option value="gpt-4o">GPT-4o (~95% · $0.049/p)</option>
-                        <option value="gpt-4.1-mini">GPT-4.1-mini (~92% · $0.016/p)</option>
-                        <option value="gpt-4.1-nano">GPT-4.1-nano (~88% · $0.012/p)</option>
+                        <option value="o4-mini" selected>o4-mini · ~$0.027/p</option>
+                        <option value="gpt-4.1">GPT-4.1 · ~$0.041/p</option>
+                        <option value="gpt-4o">GPT-4o · ~$0.049/p</option>
+                        <option value="gpt-4.1-mini">GPT-4.1-mini · ~$0.016/p</option>
+                        <option value="gpt-4.1-nano">GPT-4.1-nano · ~$0.012/p</option>
                     </optgroup>
                     <optgroup label="Anthropic — Premium">
-                        <option value="claude-opus-4-20250514">Claude Opus (~98% · $0.098/p)</option>
-                        <option value="claude-sonnet-4-20250514">Claude Sonnet (~96% · $0.063/p)</option>
+                        <option value="claude-opus-4-20250514">Claude Opus · ~$0.098/p</option>
+                        <option value="claude-sonnet-4-20250514">Claude Sonnet · ~$0.063/p</option>
                     </optgroup>
                     <optgroup label="OpenAI — Premium">
-                        <option value="o1">o1 (~97% · $0.243/p)</option>
+                        <option value="o1">o1 · ~$0.243/p</option>
                     </optgroup>
                 </select>
             </div>
@@ -349,14 +349,14 @@
 
         // ── Cost per page data (with image) ─────────
         const COSTS = {
-            'o4-mini':                  { withImg: 0.027, noImg: 0.023, accuracy: 96 },
-            'gpt-4.1':                  { withImg: 0.041, noImg: 0.033, accuracy: 96 },
-            'gpt-4o':                   { withImg: 0.049, noImg: 0.039, accuracy: 95 },
-            'gpt-4.1-mini':             { withImg: 0.016, noImg: 0.015, accuracy: 92 },
-            'gpt-4.1-nano':             { withImg: 0.012, noImg: 0.011, accuracy: 88 },
-            'claude-opus-4-20250514':   { withImg: 0.098, noImg: 0.078, accuracy: 98 },
-            'claude-sonnet-4-20250514': { withImg: 0.063, noImg: 0.051, accuracy: 96 },
-            'o1':                       { withImg: 0.243, noImg: 0.183, accuracy: 97 },
+            'o4-mini':                  { withImg: 0.027, noImg: 0.023 },
+            'gpt-4.1':                  { withImg: 0.041, noImg: 0.033 },
+            'gpt-4o':                   { withImg: 0.049, noImg: 0.039 },
+            'gpt-4.1-mini':             { withImg: 0.016, noImg: 0.015 },
+            'gpt-4.1-nano':             { withImg: 0.012, noImg: 0.011 },
+            'claude-opus-4-20250514':   { withImg: 0.098, noImg: 0.078 },
+            'claude-sonnet-4-20250514': { withImg: 0.063, noImg: 0.051 },
+            'o1':                       { withImg: 0.243, noImg: 0.183 },
         };
 
         let pendingFile = null;
@@ -367,15 +367,12 @@
             const engine = engineSelect.value;
             const info = COSTS[model];
             if (!info || !pendingFile) return;
-            // Scanned PDFs are ~300-500 KB per page. Use 400KB as estimate.
             const estPages = Math.max(1, Math.round(pendingFile.size / 400000));
             const costPer = sendImg ? info.withImg : info.noImg;
             const mathpixCost = engine === 'mathpix' ? 0.005 : 0;
             const total = (estPages * (costPer + mathpixCost)).toFixed(2);
-            const acc = sendImg ? info.accuracy : info.accuracy - 2;
-            const accAdj = engine === 'vision' ? acc - 4 : acc;
             const engineLabel = engine === 'vision' ? 'vision directe' : 'Mathpix';
-            costEstimate.innerHTML = `~${estPages} pages · ${engineLabel} · ~${accAdj}% précision · <span class="price">~$${total}</span>`;
+            costEstimate.innerHTML = `~${estPages} pages · ${engineLabel} · <span class="price">~$${total}</span>`;
         }
 
         modelSelect.addEventListener('change', updateCostEstimate);
@@ -475,7 +472,8 @@
                 </div>
                 <div class="log" id="log-${jobId}"></div>
                 <div class="actions" id="actions-${jobId}" style="display:none">
-                    <a class="btn primary" id="dl-md-${jobId}" href="#">Download PDF</a>
+                    <a class="btn primary" id="dl-pdf-${jobId}" href="#">Télécharger PDF</a>
+                    <a class="btn" id="dl-tex-${jobId}" href="#">Télécharger .tex</a>
                 </div>
             `;
             jobsContainer.prepend(card);
@@ -505,8 +503,10 @@
             if (status) { status.textContent = 'Done'; status.className = 'job-status done'; }
             const actions = document.getElementById(`actions-${jobId}`);
             if (actions) actions.style.display = 'flex';
-            const dl = document.getElementById(`dl-md-${jobId}`);
-            if (dl) dl.href = `/api/jobs/${jobId}/download`;
+            const dlPdf = document.getElementById(`dl-pdf-${jobId}`);
+            if (dlPdf) dlPdf.href = `/api/jobs/${jobId}/download?fmt=pdf`;
+            const dlTex = document.getElementById(`dl-tex-${jobId}`);
+            if (dlTex) dlTex.href = `/api/jobs/${jobId}/download?fmt=tex`;
         }
 
         function markError(jobId, message) {
