@@ -1,4 +1,4 @@
-"""STEM-Pipe — Web server with real-time progress via WebSocket."""
+"""Palimpsest — Web server with real-time progress via WebSocket."""
 
 import asyncio
 import json
@@ -14,11 +14,11 @@ from fastapi.staticfiles import StaticFiles
 from pipeline import run_pipeline
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", datefmt="%H:%M:%S")
-logger = logging.getLogger("stem_pipe.server")
+logger = logging.getLogger("palimpsest.server")
 
 BASE_DIR = Path(__file__).resolve().parent
 
-app = FastAPI(title="STEM-Pipe", version="1.0.0")
+app = FastAPI(title="Palimpsest", version="0.1.0")
 
 # ── State ────────────────────────────────────────────────
 

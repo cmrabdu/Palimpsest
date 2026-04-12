@@ -1,251 +1,220 @@
 <div align="center">
 
-# STEM-Pipe
+# Palimpsest
 
-### Scanned STEM PDFs → Beautiful LaTeX Documents
+**Turn your professors' ancient scanned PDFs into clean, modern LaTeX documents.**
 
-**Transform scanned university physics, mechanics, and fluid dynamics courses into clean, structured, formula-perfect documents.**
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](CHANGELOG.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-yellow.svg)](https://python.org)
 
-[Getting Started](#getting-started) · [How It Works](#how-it-works) · [Web Interface](#web-interface) · [Cost Estimate](#cost-estimate) · [API Reference](#api-reference)
-
----
+[Getting Started](#getting-started) · [How It Works](#how-it-works) · [Web UI](#web-interface) · [Cost](#cost-estimate) · [Changelog](CHANGELOG.md)
 
 </div>
 
-## The Problem
+---
 
-You have scanned PDFs of university courses from the 80s — dense physics, differential equations, triple integrals, tensor notation. They're **image-only**: no text layer, no copy-paste, no way to feed them to an AI for studying. OCR tools like Tesseract choke on mathematical notation.
+## Why?
 
-## The Solution
+I'm a student. My professors are great at teaching, but their course materials are… stuck in the past. We're talking **scanned photocopies of handwritten notes from the 80s** — pages photographed with CamScanner, image-only PDFs with no text layer, no copy-paste, no search. Dense physics, statics, fluid dynamics, differential equations, tensor notation — all locked in blurry images.
 
-STEM-Pipe is a fully automated pipeline that:
+I tried the usual OCR tools. Tesseract chokes on `∂²u/∂x²`. Google Docs mangling integrals. Nothing works for STEM content.
 
-1. **Extracts** each page as a high-resolution image
-2. **Preprocesses** images (deskew, binarize, denoise)
-3. **OCRs** with Mathpix — the gold standard for STEM formula recognition
-4. **Rewrites & Verifies** with Claude Opus, cross-referencing the original image to catch and correct OCR errors using physics domain knowledge
-5. **Merges** pages into a clean, structured document with proper sections, LaTeX formulas, and accumulated context
+So I built **Palimpsest** — a simple tool that takes these old scanned PDFs and rewrites them as proper, structured, beautifully typeset LaTeX documents. Drop a PDF, get a clean `.tex` and compiled `.pdf` back. That's it.
 
-```
-┌─────────┐     ┌──────────────┐     ┌─────────┐     ┌───────────────────┐     ┌────────────┐
-│  PDF     │────▶│ Preprocessing│────▶│ Mathpix │────▶│ Claude Opus       │────▶│ Final Doc  │
-│ (scanned)│     │ OpenCV       │     │ OCR     │     │ Image + OCR text  │     │ .md / .tex │
-└─────────┘     └──────────────┘     └─────────┘     │ → verify & rewrite│     └────────────┘
-                                                      └───────────────────┘
-```
+This is a **free, open-source tool made by a student, for students.** No profit, no startup, no catch. Just a way to make old knowledge accessible again.
 
-## Key Features
+> **palimpsest** */ˈpalɪmp.sɛst/* — a manuscript page that has been scraped clean and written over, so that traces of the original text show through. That's exactly what this tool does: it reads through the noise and rewrites the content cleanly.
 
-- **Formula-aware OCR** — Mathpix handles `∂`, `∫∫∫`, `∇×`, tensor indices, Greek letters
-- **Physics-aware verification** — Claude checks dimensional consistency, corrects `ξ` vs `ε`, validates equation structure
-- **Cross-reference mode** — Claude sees both the original image AND the OCR text, catching divergences
-- **Inter-page context** — Variables, notation conventions, and section structure carry across pages
-- **Fault-tolerant** — Page-by-page caching; resume interrupted runs from where they stopped
-- **Web interface** — Drop a PDF, watch it process, download the result
-- **Export** — Markdown+LaTeX (for LLMs/Obsidian) or compiled PDF (via Pandoc)
+---
 
-## How It Works
-
-### Pipeline Architecture
+## What It Does
 
 ```
-stem-pipe/
-├── config.yaml              # API keys & settings
-├── pipeline.py              # CLI entry point
-├── server.py                # Web interface (FastAPI)
-├── src/
-│   ├── extract.py           # PDF → high-res images (pdf2image)
-│   ├── preprocess.py        # OpenCV: binarize, deskew, denoise
-│   ├── ocr_mathpix.py       # Mathpix API extraction
-│   ├── rewrite.py           # Claude Opus verification & restructuring
-│   ├── context.py           # Inter-page context accumulator
-│   ├── merge.py             # Page fusion → final document
-│   └── export.py            # Pandoc → PDF compilation
-├── web/
-│   └── index.html           # Single-page web UI
-├── .cache/                  # Page-level cache (auto-generated)
-└── output/                  # Final documents (auto-generated)
+ Scanned PDF               Palimpsest                Clean LaTeX + PDF
+┌─────────────┐    ┌─────────────────────┐    ┌──────────────────────┐
+│ ░░▒▒▓▓██░░  │    │  Extract pages      │    │ \section{Statique}   │
+│ blurry scan │───▶│  Preprocess (OpenCV) │───▶│ \begin{equation}     │
+│ no text layer│    │  OCR via AI vision   │    │   \vec{F} = m\vec{a} │
+│ ∂²u/∂x² = ? │    │  Rewrite to LaTeX   │    │ \end{equation}       │
+└─────────────┘    │  Compile with xelatex│    │ Proper figures, TOC  │
+                   └─────────────────────┘    └──────────────────────┘
 ```
 
-### Step-by-Step
+### Features
 
-#### 1. PDF → Images (`src/extract.py`)
-- Uses `pdf2image` (poppler backend) at **400 DPI**
-- Grayscale extraction for consistency
-- Each page saved as PNG in cache
+- **AI-powered OCR** — uses vision models (OpenAI, Anthropic) to read formulas directly from images
+- **LaTeX output** — proper `\section{}`, `\begin{equation}`, `\begin{tikzpicture}` — not some Markdown approximation
+- **Inter-page memory** — variables and notation defined on page 3 are remembered on page 50
+- **Fault-tolerant** — page-by-page caching; resume interrupted runs from where they stopped
+- **Web interface** — drag & drop a PDF, watch real-time progress, download the result
+- **Multi-model** — supports 8 models across OpenAI and Anthropic (o4-mini is the sweet spot)
+- **No Mathpix needed** — vision-direct mode lets the LLM do OCR straight from images (free, no signup)
+- **Optional Mathpix** — for maximum formula accuracy on particularly rough scans
 
-#### 2. Preprocessing (`src/preprocess.py`)
-- **Adaptive binarization** — handles uneven lighting from phone scans
-- **Deskew** — auto-detects and corrects page rotation (common with CamScanner)
-- **Denoise** — optional, for particularly noisy scans
-- Processed images stored alongside originals in cache
-
-#### 3. STEM OCR (`src/ocr_mathpix.py`)
-- Sends preprocessed images to **Mathpix API**
-- Returns Markdown with LaTeX inline (`$...$`) and display (`$$...$$`)
-- Handles tables, section headers, numbered equations
-- Batch processing with rate limiting
-
-#### 4. Verification & Rewrite (`src/rewrite.py`)
-- Sends to **Claude Opus**:
-  - The **original page image** (for visual cross-reference)
-  - The **Mathpix OCR output** (raw text to verify/improve)
-  - The **inter-page context** (variables, conventions, current section)
-- Claude:
-  - Verifies formulas against the image
-  - Corrects OCR errors using physics domain knowledge
-  - Structures content with proper headings, numbered equations
-  - Updates the inter-page context register
-
-#### 5. Merge & Export (`src/merge.py`, `src/export.py`)
-- Concatenates all rewritten pages in order
-- Generates table of contents from detected sections
-- Optionally compiles to PDF via Pandoc + LaTeX template
-
-### Inter-Page Context System
-
-A YAML-based context register persists across pages:
-
-```yaml
-document_title: "Mécanique des Fluides — Cours L3"
-current_chapter: "3. Équations de Navier-Stokes"
-current_section: "3.2 Forme intégrale"
-variables:
-  ρ: "masse volumique du fluide [kg/m³]"
-  μ: "viscosité dynamique [Pa·s]"
-  u: "champ de vitesse [m/s]"
-  p: "pression [Pa]"
-notation:
-  - "Indices Einstein pour la sommation"
-  - "Vecteurs en gras"
-  - "Dérivée partielle: ∂/∂t"
-page_number: 47
-```
-
-This ensures Claude understands `ρ` on page 50 even if it was only defined on page 3.
+---
 
 ## Getting Started
 
 ### Prerequisites
 
-- Python 3.11+
-- [Poppler](https://poppler.freedesktop.org/) (`brew install poppler` on macOS)
-- [Pandoc](https://pandoc.org/) + TeX Live (optional, for PDF export)
+- **Python 3.11+**
+- **Poppler** — for PDF-to-image extraction
+- **BasicTeX** or **TeX Live** — for compiling LaTeX to PDF
+
+```bash
+# macOS
+brew install poppler
+brew install --cask basictex
+
+# Ubuntu / Debian
+sudo apt install poppler-utils texlive-latex-extra texlive-lang-french
+```
 
 ### Installation
 
 ```bash
-git clone https://github.com/cmrabdu/stem-pipe.git
-cd stem-pipe
+git clone https://github.com/cmrabdu/Palimpsest.git
+cd Palimpsest
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+```
 
-# Copy and fill in your API keys
+### Configuration
+
+```bash
 cp config.example.yaml config.yaml
 ```
 
-### CLI Usage
+Open `config.yaml` and add your API key. You only need **one** provider:
 
-```bash
-# Process a single PDF
-python pipeline.py cours_mecaflu.pdf
+| Provider | Key needed | Best model | Cost |
+|----------|-----------|------------|------|
+| OpenAI | `api_keys.openai.api_key` | **o4-mini** (recommended) | ~$0.04/page |
+| Anthropic | `api_keys.anthropic.api_key` | claude-opus-4-20250514 | ~$0.15/page |
 
-# Specify output format
-python pipeline.py cours_mecaflu.pdf --format both
+### Usage
 
-# Process with PDF export
-python pipeline.py cours_mecaflu.pdf --pdf
-
-# Reprocess only failed/missing pages
-python pipeline.py cours_mecaflu.pdf --resume
-```
-
-### Web Interface
+#### Web interface (recommended)
 
 ```bash
 python server.py
-# → http://localhost:8000
+# → open http://localhost:8000
 ```
 
-Drop your PDF, watch real-time progress per page, download when done.
+Drop your PDF, pick a model, hit Start. Watch page-by-page progress in real time. Download the compiled PDF when done.
 
-## Web Interface
+#### Command line
 
-<div align="center">
+```bash
+# Basic usage (vision-direct mode, o4-mini)
+python pipeline.py lecture_notes.pdf
 
-```
-┌──────────────────────────────────────────────────┐
-│  STEM-Pipe                                       │
-│                                                  │
-│  ┌──────────────────────────────────────────┐    │
-│  │                                          │    │
-│  │     Drop PDF here or click to upload     │    │
-│  │                                          │    │
-│  └──────────────────────────────────────────┘    │
-│                                                  │
-│  cours_mecaflu.pdf — 147 pages                   │
-│  ████████████████░░░░░░░░░░  62% (91/147)        │
-│                                                  │
-│  Page 91: Rewriting with Claude...               │
-│                                                  │
-│  [Download .md]  [Download .pdf]  [View]         │
-└──────────────────────────────────────────────────┘
+# Use a different model
+python pipeline.py lecture_notes.pdf --model gpt-4.1
+
+# Use Mathpix OCR instead of vision-direct
+python pipeline.py lecture_notes.pdf --engine mathpix
 ```
 
-</div>
+---
 
-Features:
-- **Real-time progress** via WebSocket
-- **Page preview** — see each page as it's processed
-- **Error handling** — retry individual failed pages
-- **History** — list of previously processed documents
+## How It Works
+
+### Pipeline
+
+1. **Extract** — `pdf2image` converts each page at 400 DPI
+2. **Preprocess** — OpenCV applies adaptive binarization, deskew (Hough transform), and denoising
+3. **OCR** — the AI vision model reads the page image directly and produces LaTeX
+4. **Context** — a YAML register tracks variables, notation, and section structure across pages
+5. **Merge** — all pages are assembled into a single `.tex` document with a full academic preamble
+6. **Compile** — `xelatex` produces a clean PDF with table of contents
+
+### Project Structure
+
+```
+Palimpsest/
+├── pipeline.py              # CLI entry point
+├── server.py                # FastAPI web server
+├── config.example.yaml      # Configuration template
+├── requirements.txt         # Python dependencies
+├── VERSION                  # Semver version file
+├── CHANGELOG.md             # Release history
+├── src/
+│   ├── extract.py           # PDF → images (pdf2image + poppler)
+│   ├── preprocess.py        # OpenCV: binarize, deskew, denoise
+│   ├── ocr_mathpix.py       # Optional Mathpix API
+│   ├── rewrite.py           # AI rewrite engine (OpenAI / Anthropic)
+│   ├── context.py           # Inter-page context accumulator
+│   ├── merge.py             # LaTeX document assembly
+│   └── export.py            # xelatex PDF compilation
+└── web/
+    └── index.html           # Single-page web UI
+```
+
+### Supported Models
+
+| Provider | Model | Notes |
+|----------|-------|-------|
+| OpenAI | **o4-mini** | Best value — recommended default |
+| OpenAI | gpt-4.1 | High quality, higher cost |
+| OpenAI | gpt-4o | Good balance |
+| OpenAI | gpt-4.1-mini | Budget option |
+| OpenAI | gpt-4.1-nano | Cheapest, lower quality |
+| OpenAI | o1 | Reasoning model |
+| Anthropic | claude-opus-4-20250514 | Best quality overall |
+| Anthropic | claude-sonnet-4-20250514 | Good quality, moderate cost |
+
+---
 
 ## Cost Estimate
 
-Based on Claude Opus ($5/$25 per M tokens) and Mathpix (~$0.01/page):
+Using **o4-mini** (vision-direct, no Mathpix):
 
-| Pages | Mathpix | Claude Opus | Total |
-|-------|---------|-------------|-------|
-| 50    | $0.50   | $4.50       | **~$5** |
-| 100   | $1.00   | $9.00       | **~$10** |
-| 300   | $3.00   | $27.00      | **~$30** |
-| 1000  | $10.00  | $90.00      | **~$100** |
+| Pages | Estimated cost |
+|-------|---------------|
+| 15 | ~$0.60 |
+| 50 | ~$2.00 |
+| 100 | ~$4.00 |
+| 300 | ~$12.00 |
 
-## Configuration
+Costs vary based on page complexity and image size. Vision-direct mode avoids Mathpix fees entirely.
 
-See [`config.example.yaml`](config.example.yaml) for all options. Key settings:
+---
+
+## Configuration Reference
+
+See [`config.example.yaml`](config.example.yaml) for all options.
 
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `extraction.dpi` | 400 | Image resolution (300–600) |
-| `rewrite.model` | `claude-opus-4-20250514` | Claude model for rewriting |
-| `rewrite.send_source_image` | true | Cross-reference image + OCR |
+| `extraction.engine` | `vision` | `vision` (free) or `mathpix` |
+| `rewrite.model` | `o4-mini` | AI model for OCR + rewrite |
+| `rewrite.send_source_image` | `true` | Send page image for cross-reference |
 | `rewrite.language` | `fr` | Document language |
-| `concurrency.extraction_batch_size` | 5 | Parallel OCR pages |
-| `cache.enabled` | true | Resume interrupted runs |
+| `cache.enabled` | `true` | Resume interrupted runs |
 
-## API Reference
+---
 
-### Python API
+## Roadmap
 
-```python
-from stem_pipe import Pipeline
+- [ ] Batch API support for lower cost on large documents
+- [ ] Smart model routing (fast model for simple pages, powerful model for complex ones)
+- [ ] Improved TikZ generation for mechanical diagrams
+- [ ] GitHub Actions CI/CD for self-hosted deployment
+- [ ] Multi-language support (currently optimized for French STEM)
+- [ ] Better error recovery for LaTeX compilation failures
 
-pipe = Pipeline("config.yaml")
-result = pipe.process("cours_mecaflu.pdf")
+---
 
-# Access individual pages
-for page in result.pages:
-    print(page.number, page.markdown[:100])
+## Contributing
 
-# Export
-result.save_markdown("output/cours.md")
-result.save_pdf("output/cours.pdf")  # requires pandoc
-```
+This is a student project and contributions are welcome! If you're also stuck with terrible scanned PDFs, feel free to open an issue or submit a PR.
 
 ## License
 
-MIT
+[MIT](LICENSE) — do whatever you want with it.
 
 ---
 

@@ -1,4 +1,4 @@
-"""STEM-Pipe — Main pipeline orchestrator."""
+"""Palimpsest — Main pipeline orchestrator."""
 
 import asyncio
 import json
@@ -23,7 +23,7 @@ from src.rewrite import rewrite_page, detect_provider, Provider
 import httpx
 
 console = Console()
-logger = logging.getLogger("stem_pipe")
+logger = logging.getLogger("palimpsest")
 
 
 # ── Cache helpers ────────────────────────────────────────
@@ -54,7 +54,7 @@ async def run_pipeline(
     config_path: str = "config.yaml",
     on_progress: Callable[[int, int, str], None] | None = None,
 ) -> Path:
-    """Run the full STEM-Pipe pipeline on a PDF.
+    """Run the full Palimpsest pipeline on a PDF.
 
     Args:
         pdf_path: Path to the input scanned PDF.
@@ -278,7 +278,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="STEM-Pipe — Transform scanned STEM PDFs into structured LaTeX documents",
+        description="Palimpsest — Transform scanned PDFs into clean LaTeX documents",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("pdf", help="Path to the scanned PDF file")
