@@ -70,27 +70,34 @@ TABLEAUX — RÈGLES STRICTES :
 - INTERDICTION ABSOLUE : aucun \\begin{tikzpicture} dans une cellule de tableau, même pour un symbole simple. Décrire en texte (ex : « cercle avec axe vertical »).
 - INTERDICTION ABSOLUE : aucun \\begin{tabular} imbriqué dans une cellule de tabularx. Écrire le texte directement dans la cellule.
 
-FIGURES ET SCHÉMAS — RÈGLES STRICTES :
-- Ne placer une figure QUE si elle est visuellement présente sur la page actuelle. Si le texte mentionne « la figure 3.2 » sans que cette figure soit visible sur l'image, conserver la référence textuelle (\\ref{fig:3-2}) — NE PAS créer d'environnement figure.
-- TikZ AUTORISÉ si ET SEULEMENT SI toutes ces conditions sont vraies :
-  [ ] Moins de 6 primitives géométriques (draw, fill, node)
-  [ ] Maximum 2 corps/objets distincts
-  [ ] Vue 2D uniquement (pas de 3D ni perspective)
-  [ ] Aucune cote ni dimensionnement
-  [ ] Aucun hachurage de matière complexe
-  [ ] Pas de mécanisme articulé (liaisons entre corps mobiles)
-  Si UNE SEULE condition est fausse → format encadré obligatoire.
-- Format TikZ (si autorisé) :
-  \\begin{figure}[H]\\centering\\begin{tikzpicture}...\\end{tikzpicture}\\caption{...}\\label{fig:N-M}\\end{figure}
-- Format encadré (sinon) :
-  \\begin{figure}[H]\\centering
-  \\fbox{\\parbox{0.9\\textwidth}{\\textit{\\textbf{Figure N.M :} Description complète incluant : éléments, positions, directions, labels, légendes.}}}
-  \\caption{...}\\label{fig:N-M}\\end{figure}
-- FREE BODY DIAGRAM (bilan des efforts) — règle spéciale :
-  TikZ autorisé si ≤ 3 forces sur un corps simple. Couleurs : forces actives en bleu (\\draw[blue,->,thick]), réactions en rouge (\\draw[red,->,thick]).
-  Chaque force avec son label : node[position] {$\\vec{F}$}
-  Au-delà de 3 forces ou géométrie non triviale → fbox avec description exhaustive.
-- NE JAMAIS écrire « Figure 3.2 — ... » comme du texte brut. Toute figure visible DOIT être dans un environnement figure.
+FIGURES ET SCHÉMAS — PRINCIPE : DESSINER D'ABORD, encadrer seulement si nécessaire.
+- Ne placer une figure QUE si elle est visuellement présente sur la page actuelle. Si le texte mentionne « la figure 3.2 » sans que cette figure soit visible sur l'image, conserver uniquement \\ref{fig:3-2} — NE PAS créer d'environnement figure.
+
+TOUJOURS TikZ (reconnaître ces patterns et dessiner) :
+- Vecteur / flèche de force sur fond neutre (ex : fil avec tension, réaction normale)
+- Formes simples avec points nommés : cercle + 2 points, segment + extrémités, rectangle + label
+- Schéma de liaison simple 2D : pivot (cercle + tige), glissière (guide + tige), appui plan (ligne + triangle)
+- Bilan des efforts (≤ 4 forces) : corps simple + vecteurs colorés ; forces actives \\draw[blue,->,thick], réactions \\draw[red,->,thick], chaque force avec node{$\\vec{F}$}
+
+TOUJOURS fbox (ne jamais tenter TikZ) :
+- Mécanisme articulé avec plusieurs corps mobiles (compas, bielle-manivelle, leviers multiples)
+- Hachures de matière (\\pattern) ou remplissages complexes
+- Vue 3D ou en perspective
+- Schéma avec cotes chiffrées ou dimensions
+- Bilan des efforts avec plus de 4 forces
+- Tout ce qui nécessite un paquet TikZ non chargé
+
+Format TikZ :
+\\begin{figure}[H]\\centering
+\\begin{tikzpicture}[scale=1]...\\end{tikzpicture}
+\\caption{...}\\label{fig:N-M}\\end{figure}
+
+Format fbox :
+\\begin{figure}[H]\\centering
+\\fbox{\\parbox{0.9\\textwidth}{\\textit{\\textbf{Figure N.M :} Description exhaustive : tous les éléments visibles, positions relatives, labels, flèches, directions, légende.}}}
+\\caption{...}\\label{fig:N-M}\\end{figure}
+
+- NE JAMAIS écrire « Figure 3.2 — ... » comme texte brut. Toute figure visible DOIT être dans un environnement figure.
 
 LABELS ET RÉFÉRENCES — CONVENTION STRICTE :
 - Toute figure : \\label{fig:N-M} (N = chapitre, M = numéro figure source)
@@ -212,27 +219,34 @@ TABLEAUX — RÈGLES STRICTES :
 - INTERDICTION ABSOLUE : aucun \\begin{tikzpicture} dans une cellule de tableau, même pour un symbole simple. Décrire en texte (ex : « cercle avec axe vertical »).
 - INTERDICTION ABSOLUE : aucun \\begin{tabular} imbriqué dans une cellule de tabularx. Écrire le texte directement dans la cellule.
 
-FIGURES ET SCHÉMAS — RÈGLES STRICTES :
-- Ne placer une figure QUE si elle est visuellement présente sur la page actuelle. Si le texte mentionne « la figure 3.2 » sans que cette figure soit visible sur l'image, conserver la référence textuelle (\\ref{fig:3-2}) — NE PAS créer d'environnement figure.
-- TikZ AUTORISÉ si ET SEULEMENT SI toutes ces conditions sont vraies :
-  [ ] Moins de 6 primitives géométriques (draw, fill, node)
-  [ ] Maximum 2 corps/objets distincts
-  [ ] Vue 2D uniquement (pas de 3D ni perspective)
-  [ ] Aucune cote ni dimensionnement
-  [ ] Aucun hachurage de matière complexe
-  [ ] Pas de mécanisme articulé (liaisons entre corps mobiles)
-  Si UNE SEULE condition est fausse → format encadré obligatoire.
-- Format TikZ (si autorisé) :
-  \\begin{figure}[H]\\centering\\begin{tikzpicture}...\\end{tikzpicture}\\caption{...}\\label{fig:N-M}\\end{figure}
-- Format encadré (sinon) :
-  \\begin{figure}[H]\\centering
-  \\fbox{\\parbox{0.9\\textwidth}{\\textit{\\textbf{Figure N.M :} Description complète incluant : éléments, positions, directions, labels, légendes.}}}
-  \\caption{...}\\label{fig:N-M}\\end{figure}
-- FREE BODY DIAGRAM (bilan des efforts) — règle spéciale :
-  TikZ autorisé si ≤ 3 forces sur un corps simple. Couleurs : forces actives en bleu (\\draw[blue,->,thick]), réactions en rouge (\\draw[red,->,thick]).
-  Chaque force avec son label : node[position] {$\\vec{F}$}
-  Au-delà de 3 forces ou géométrie non triviale → fbox avec description exhaustive.
-- NE JAMAIS écrire « Figure 3.2 — ... » comme du texte brut. Toute figure visible DOIT être dans un environnement figure.
+FIGURES ET SCHÉMAS — PRINCIPE : DESSINER D'ABORD, encadrer seulement si nécessaire.
+- Ne placer une figure QUE si elle est visuellement présente sur la page actuelle. Si le texte mentionne « la figure 3.2 » sans que cette figure soit visible sur l'image, conserver uniquement \\ref{fig:3-2} — NE PAS créer d'environnement figure.
+
+TOUJOURS TikZ (reconnaître ces patterns et dessiner) :
+- Vecteur / flèche de force sur fond neutre (ex : fil avec tension, réaction normale)
+- Formes simples avec points nommés : cercle + 2 points, segment + extrémités, rectangle + label
+- Schéma de liaison simple 2D : pivot (cercle + tige), glissière (guide + tige), appui plan (ligne + triangle)
+- Bilan des efforts (≤ 4 forces) : corps simple + vecteurs colorés ; forces actives \\draw[blue,->,thick], réactions \\draw[red,->,thick], chaque force avec node{$\\vec{F}$}
+
+TOUJOURS fbox (ne jamais tenter TikZ) :
+- Mécanisme articulé avec plusieurs corps mobiles (compas, bielle-manivelle, leviers multiples)
+- Hachures de matière (\\pattern) ou remplissages complexes
+- Vue 3D ou en perspective
+- Schéma avec cotes chiffrées ou dimensions
+- Bilan des efforts avec plus de 4 forces
+- Tout ce qui nécessite un paquet TikZ non chargé
+
+Format TikZ :
+\\begin{figure}[H]\\centering
+\\begin{tikzpicture}[scale=1]...\\end{tikzpicture}
+\\caption{...}\\label{fig:N-M}\\end{figure}
+
+Format fbox :
+\\begin{figure}[H]\\centering
+\\fbox{\\parbox{0.9\\textwidth}{\\textit{\\textbf{Figure N.M :} Description exhaustive : tous les éléments visibles, positions relatives, labels, flèches, directions, légende.}}}
+\\caption{...}\\label{fig:N-M}\\end{figure}
+
+- NE JAMAIS écrire « Figure 3.2 — ... » comme texte brut. Toute figure visible DOIT être dans un environnement figure.
 
 LABELS ET RÉFÉRENCES — CONVENTION STRICTE :
 - Toute figure : \\label{fig:N-M} (N = chapitre, M = numéro figure source)
