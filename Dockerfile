@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     texlive-latex-extra \
     texlive-lang-french \
     texlive-fonts-recommended \
+    texlive-science \
     && rm -rf /var/lib/apt/lists/*
 
 ARG APP_UID=1000

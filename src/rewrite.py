@@ -38,6 +38,7 @@ RÈGLES DE FORMATAGE — output = corps LaTeX UNIQUEMENT (sans \\documentclass n
 - Matrices : \\begin{pmatrix}...\\end{pmatrix}, \\begin{bmatrix}...\\end{bmatrix}
 - Vecteurs : \\vec{F}, produit vectoriel \\times, norme \\|...\\|
 - Dérivées : \\frac{d}{dt}, \\frac{\\partial}{\\partial x}, \\dot{x}, \\ddot{x}
+- INTERDIT : \\dv{}{}, \\pdv{}{}, \\qty{} — package physics absent du préambule
 
 HIÉRARCHIE DES SECTIONS — RÈGLE STRICTE :
 - \\chapter{} → si la source dit « Chapitre N », « Chapter N », ou si un en-tête de partie/chapitre est clairement isolé (ex : « DEUXIÈME PARTIE — LA STATIQUE »)
@@ -187,6 +188,7 @@ RÈGLES DE FORMATAGE — output = corps LaTeX UNIQUEMENT (sans \\documentclass n
 - Matrices : \\begin{pmatrix}...\\end{pmatrix}, \\begin{bmatrix}...\\end{bmatrix}
 - Vecteurs : \\vec{F}, produit vectoriel \\times, norme \\|...\\|
 - Dérivées : \\frac{d}{dt}, \\frac{\\partial}{\\partial x}, \\dot{x}, \\ddot{x}
+- INTERDIT : \\dv{}{}, \\pdv{}{}, \\qty{} — package physics absent du préambule
 
 HIÉRARCHIE DES SECTIONS — RÈGLE STRICTE :
 - \\chapter{} → si la source dit « Chapitre N », « Chapter N », ou si un en-tête de partie/chapitre est clairement isolé (ex : « DEUXIÈME PARTIE — LA STATIQUE »)

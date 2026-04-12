@@ -498,15 +498,34 @@
             }
         }
 
-        function markDone(jobId) {
+        function markDone(jobId, hasPdf) {
             const status = document.getElementById(`status-${jobId}`);
             if (status) { status.textContent = 'Done'; status.className = 'job-status done'; }
             const actions = document.getElementById(`actions-${jobId}`);
             if (actions) actions.style.display = 'flex';
             const dlPdf = document.getElementById(`dl-pdf-${jobId}`);
-            if (dlPdf) dlPdf.href = `/api/jobs/${jobId}/download?fmt=pdf`;
+            if (dlPdf) {
+                if (hasPdf) {
+                    dlPdf.href = `/api/jobs/${jobId}/download?fmt=pdf`;
+                } else {
+                    dlPdf.removeAttribute('href');
+                    dlPdf.classList.add('disabled');
+                    dlPdf.style.pointerEvents = 'none';
+                    dlPdf.title = 'Compilation LaTeX échouée — téléchargez le .tex';
+                    dlPdf.textContent = 'PDF (indisponible)';
+                }
+            }
             const dlTex = document.getElementById(`dl-tex-${jobId}`);
             if (dlTex) dlTex.href = `/api/jobs/${jobId}/download?fmt=tex`;
+            if (!hasPdf) {
+                const log = document.getElementById(`log-${jobId}`);
+                if (log) {
+                    const warn = document.createElement('div');
+                    warn.className = 'error-msg';
+                    warn.textContent = '⚠ PDF non généré (erreur de compilation LaTeX). Téléchargez le .tex et compilez sur Overleaf.';
+                    log.appendChild(warn);
+                }
+            }
         }
 
         function markError(jobId, message) {
@@ -534,7 +553,7 @@
                         updateProgress(jobId, data.page, data.total, data.stage);
                         break;
                     case 'done':
-                        markDone(jobId);
+                        markDone(jobId, data.has_pdf !== false);
                         ws.close();
                         break;
                     case 'error':
@@ -542,7 +561,7 @@
                         ws.close();
                         break;
                     case 'status':
-                        if (data.status === 'done') markDone(jobId);
+                        if (data.status === 'done') markDone(jobId, data.has_pdf !== false);
                         else if (data.status === 'error') markError(jobId, data.error);
                         else if (data.progress) updateProgress(jobId, data.progress, data.total, data.stage);
                         break;

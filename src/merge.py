@@ -14,9 +14,12 @@ LATEX_PREAMBLE = r"""\documentclass[12pt,a4paper]{report}
 
 % Maths
 \usepackage{amsmath,amssymb,amsthm}
-\usepackage{physics}      % \dv, \pdv, \vec, \norm, \abs...
+\usepackage{mathtools}    % extensions amsmath : \coloneqq, \prescript, etc.
 \usepackage{siunitx}      % \SI{9.81}{\metre\per\second\squared}
 \sisetup{output-decimal-marker={,}, locale=FR}
+% Délimiteurs redimensionnables (\abs{x} → |x|, \norm{v} → ‖v‖)
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}
 
 % Environnements sémantiques
 \theoremstyle{definition}

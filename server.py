@@ -117,7 +117,8 @@ async def _process_job(job_id: str, pdf_path: str, model: str = "o4-mini", send_
 
         jobs[job_id]["status"] = "done"
         jobs[job_id]["output_path"] = str(output)
-        await broadcast(job_id, {"type": "done", "output": str(output)})
+        jobs[job_id]["has_pdf"] = output.suffix == ".pdf"
+        await broadcast(job_id, {"type": "done", "output": str(output), "has_pdf": output.suffix == ".pdf"})
     except Exception as e:
         logger.exception(f"Job {job_id} failed")
         jobs[job_id]["status"] = "error"
@@ -156,14 +157,18 @@ async def download_result(job_id: str, fmt: str = "auto"):
     # Default: prefer PDF
     if path.suffix == ".pdf" and path.exists():
         return FileResponse(path, filename=path.name, media_type="application/pdf")
-    elif path.suffix == ".tex" and path.exists():
-        return FileResponse(path, filename=path.name, media_type="application/x-tex")
 
-    # Fallback: try the other format
-    alt = path.with_suffix(".pdf") if path.suffix == ".tex" else path.with_suffix(".tex")
-    if alt.exists():
-        media = "application/pdf" if alt.suffix == ".pdf" else "application/x-tex"
-        return FileResponse(alt, filename=alt.name, media_type=media)
+    # fmt=pdf requested but only .tex exists → compilation failed; honest error
+    if fmt == "pdf":
+        tex_path = path.with_suffix(".tex") if path.suffix == ".pdf" else path
+        if tex_path.exists():
+            return {"error": "pdf_unavailable", "detail": "La compilation LaTeX a échoué sur le serveur. Téléchargez le .tex et compilez sur Overleaf."}
+        return {"error": "Output file not found."}
+
+    # Fallback: serve .tex
+    tex_path = path.with_suffix(".tex") if path.suffix == ".pdf" else path
+    if tex_path.exists():
+        return FileResponse(tex_path, filename=tex_path.name, media_type="application/x-tex")
     return {"error": "Output file not found."}
 
 
