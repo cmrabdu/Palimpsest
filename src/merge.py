@@ -5,7 +5,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-LATEX_PREAMBLE = r"""\documentclass[12pt,a4paper]{article}
+LATEX_PREAMBLE = r"""\documentclass[12pt,a4paper]{report}
 
 % Encodage et langue
 \usepackage[utf8]{inputenc}
@@ -17,6 +17,15 @@ LATEX_PREAMBLE = r"""\documentclass[12pt,a4paper]{article}
 \usepackage{physics}      % \dv, \pdv, \vec, \norm, \abs...
 \usepackage{siunitx}      % \SI{9.81}{\metre\per\second\squared}
 \sisetup{output-decimal-marker={,}, locale=FR}
+
+% Environnements sémantiques
+\theoremstyle{definition}
+\newtheorem{definition}{Définition}[chapter]
+\theoremstyle{plain}
+\newtheorem{theorem}{Théorème}[chapter]
+\theoremstyle{remark}
+\newtheorem{remark}{Remarque}[chapter]
+\newtheorem{example}{Exemple}[chapter]
 
 % Mise en page
 \usepackage[margin=2.5cm]{geometry}
@@ -44,8 +53,10 @@ LATEX_PREAMBLE = r"""\documentclass[12pt,a4paper]{article}
 \usepackage{hyperref}
 \hypersetup{colorlinks=true, linkcolor=blue!70!black, urlcolor=blue}
 
-% Numérotation des équations par section
-\numberwithin{equation}{section}
+% Numérotation des équations/figures/tableaux par chapitre
+\numberwithin{equation}{chapter}
+\numberwithin{figure}{chapter}
+\numberwithin{table}{chapter}
 
 """
 
