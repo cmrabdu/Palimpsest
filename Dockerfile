@@ -26,9 +26,8 @@ RUN addgroup --gid "${APP_GID}" app \
 COPY requirements.txt /tmp/requirements.txt
 
 # Use headless OpenCV in Docker (no GUI needed), pin numpy<2 for older CPUs without AVX2
-RUN sed 's/opencv-python/opencv-python-headless/' /tmp/requirements.txt > /tmp/req.txt \
+RUN sed -e 's/opencv-python/opencv-python-headless/' -e 's/numpy>=1.24.0/numpy>=1.24.0,<2/' /tmp/requirements.txt > /tmp/req.txt \
     && pip install --upgrade pip \
-    && pip install "numpy<2" \
     && pip install -r /tmp/req.txt
 
 COPY src /app/src
