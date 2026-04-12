@@ -1,0 +1,31 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build & restart
+        run: bash deploy/cd-deploy.sh
+
+      - name: Health check
+        run: |
+          for i in $(seq 1 12); do
+            result=$(curl -sf http://127.0.0.1:8790/ 2>/dev/null || true)
+            if [ -n "$result" ]; then
+              echo "Health check passed"
+              exit 0
+            fi
+            echo "Attempt $i: not ready yet, waiting 5s..."
+            sleep 5
+          done
+          echo "Health check failed after 60s"
+          exit 1
