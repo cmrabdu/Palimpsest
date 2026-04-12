@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STEM-Pipe</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface-2: #1a1a25;
+            --border: #2a2a3a;
+            --text: #e4e4ef;
+            --text-2: #8888a0;
+            --accent: #6c8cff;
+            --accent-glow: #6c8cff33;
+            --green: #4ade80;
+            --red: #f87171;
+            --radius: 12px;
+            --font: 'SF Pro Display', -apple-system, system-ui, sans-serif;
+            --mono: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 640px;
+            width: 100%;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .header h1 span {
+            color: var(--accent);
+        }
+
+        .header p {
+            color: var(--text-2);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Upload zone */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--surface);
+        }
+
+        .upload-zone:hover, .upload-zone.drag-over {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .upload-zone .icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .upload-zone .label {
+            font-size: 1rem;
+            color: var(--text-2);
+        }
+
+        .upload-zone .label strong {
+            color: var(--accent);
+        }
+
+        .upload-zone input {
+            display: none;
+        }
+
+        /* Settings panel */
+        .settings {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .settings.visible { display: block; }
+
+        .settings h3 {
+            font-size: 0.85rem;
+            color: var(--text-2);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .setting-row label {
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+
+        .setting-row select {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.4rem 0.75rem;
+            color: var(--text);
+            font-size: 0.8rem;
+            font-family: var(--mono);
+            cursor: pointer;
+        }
+
+        .setting-row select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .cost-estimate {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background: var(--surface-2);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--text-2);
+            font-family: var(--mono);
+            text-align: center;
+        }
+
+        .cost-estimate .price {
+            color: var(--green);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        /* Job card */
+        .job-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .job-filename {
+            font-family: var(--mono);
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+
+        .job-status {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .job-status.processing { background: var(--accent-glow); color: var(--accent); }
+        .job-status.done { background: #4ade8022; color: var(--green); }
+        .job-status.error { background: #f8717122; color: var(--red); }
+
+        /* Progress bar */
+        .progress-wrap {
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--surface-2);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-2);
+        }
+
+        .progress-stage {
+            font-family: var(--mono);
+            font-size: 0.75rem;
+        }
+
+        /* Actions */
+        .actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+            color: var(--text);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-decoration: none;
+            font-family: var(--font);
+        }
+
+        .btn:hover { border-color: var(--accent); color: var(--accent); }
+        .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .btn.primary:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Log */
+        .log {
+            margin-top: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            color: var(--text-2);
+            background: var(--surface-2);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            line-height: 1.6;
+        }
+
+        .log .entry { opacity: 0.7; }
+        .log .entry:last-child { opacity: 1; color: var(--text); }
+
+        /* Error */
+        .error-msg {
+            color: var(--red);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            font-family: var(--mono);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span>//</span> STEM-Pipe</h1>
+            <p>Scanned STEM PDFs → Beautiful LaTeX documents</p>
+        </div>
+
+        <div class="upload-zone" id="uploadZone">
+            <div class="icon">📄</div>
+            <div class="label">Drop your <strong>PDF</strong> here — or click to browse</div>
+            <input type="file" id="fileInput" accept=".pdf">
+        </div>
+
+        <div class="settings" id="settingsPanel">
+            <h3>⚙ Configuration</h3>
+            <div class="setting-row">
+                <label>Modèle de réécriture</label>
+                <select id="modelSelect">
+                    <optgroup label="OpenAI — Best value">
+                        <option value="o4-mini" selected>o4-mini (~96% · $0.027/p)</option>
+                        <option value="gpt-4.1">GPT-4.1 (~96% · $0.041/p)</option>
+                        <option value="gpt-4o">GPT-4o (~95% · $0.049/p)</option>
+                        <option value="gpt-4.1-mini">GPT-4.1-mini (~92% · $0.016/p)</option>
+                        <option value="gpt-4.1-nano">GPT-4.1-nano (~88% · $0.012/p)</option>
+                    </optgroup>
+                    <optgroup label="Anthropic — Premium">
+                        <option value="claude-opus-4-20250514">Claude Opus (~98% · $0.098/p)</option>
+                        <option value="claude-sonnet-4-20250514">Claude Sonnet (~96% · $0.063/p)</option>
+                    </optgroup>
+                    <optgroup label="OpenAI — Premium">
+                        <option value="o1">o1 (~97% · $0.243/p)</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div class="setting-row">
+                <label>Envoyer l'image source</label>
+                <select id="imageSelect">
+                    <option value="true" selected>Oui (meilleure précision)</option>
+                    <option value="false">Non (moins cher)</option>
+                </select>
+            </div>
+            <div class="setting-row">
+                <label>Mode OCR</label>
+                <select id="engineSelect">
+                    <option value="vision" selected>Vision directe (gratuit, pas de Mathpix)</option>
+                    <option value="mathpix">Mathpix ($0.005/p, meilleur sur formules)</option>
+                </select>
+            </div>
+            <div class="cost-estimate" id="costEstimate">
+                Coût estimé : <span class="price">—</span>
+            </div>
+        </div>
+
+        <div id="jobsContainer"></div>
+    </div>
+
+    <script>
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const jobsContainer = document.getElementById('jobsContainer');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const modelSelect = document.getElementById('modelSelect');
+        const imageSelect = document.getElementById('imageSelect');
+        const engineSelect = document.getElementById('engineSelect');
+        const costEstimate = document.getElementById('costEstimate');
+
+        // ── Cost per page data (with image) ─────────
+        const COSTS = {
+            'o4-mini':                  { withImg: 0.027, noImg: 0.023, accuracy: 96 },
+            'gpt-4.1':                  { withImg: 0.041, noImg: 0.033, accuracy: 96 },
+            'gpt-4o':                   { withImg: 0.049, noImg: 0.039, accuracy: 95 },
+            'gpt-4.1-mini':             { withImg: 0.016, noImg: 0.015, accuracy: 92 },
+            'gpt-4.1-nano':             { withImg: 0.012, noImg: 0.011, accuracy: 88 },
+            'claude-opus-4-20250514':   { withImg: 0.098, noImg: 0.078, accuracy: 98 },
+            'claude-sonnet-4-20250514': { withImg: 0.063, noImg: 0.051, accuracy: 96 },
+            'o1':                       { withImg: 0.243, noImg: 0.183, accuracy: 97 },
+        };
+
+        let pendingFile = null;
+
+        function updateCostEstimate() {
+            const model = modelSelect.value;
+            const sendImg = imageSelect.value === 'true';
+            const engine = engineSelect.value;
+            const info = COSTS[model];
+            if (!info || !pendingFile) return;
+            // Scanned PDFs are ~300-500 KB per page. Use 400KB as estimate.
+            const estPages = Math.max(1, Math.round(pendingFile.size / 400000));
+            const costPer = sendImg ? info.withImg : info.noImg;
+            const mathpixCost = engine === 'mathpix' ? 0.005 : 0;
+            const total = (estPages * (costPer + mathpixCost)).toFixed(2);
+            const acc = sendImg ? info.accuracy : info.accuracy - 2;
+            const accAdj = engine === 'vision' ? acc - 4 : acc;
+            const engineLabel = engine === 'vision' ? 'vision directe' : 'Mathpix';
+            costEstimate.innerHTML = `~${estPages} pages · ${engineLabel} · ~${accAdj}% précision · <span class="price">~$${total}</span>`;
+        }
+
+        modelSelect.addEventListener('change', updateCostEstimate);
+        imageSelect.addEventListener('change', updateCostEstimate);
+        engineSelect.addEventListener('change', updateCostEstimate);
+
+        // ── Upload handling ──────────────────────────
+
+        uploadZone.addEventListener('click', (e) => {
+            // Only open file picker if no file is already selected (prevents Finder re-opening)
+            if (!pendingFile) fileInput.click();
+        });
+        uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+        uploadZone.addEventListener('drop', e => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.pdf')) showSettings(file);
+        });
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files[0]) showSettings(fileInput.files[0]);
+        });
+
+        function showSettings(file) {
+            pendingFile = file;
+            settingsPanel.classList.add('visible');
+            updateCostEstimate();
+            // Replace upload zone content with file info + start button
+            uploadZone.innerHTML = `
+                <div class="icon">✅</div>
+                <div class="label"><strong>${file.name}</strong> — ${(file.size / 1024 / 1024).toFixed(1)} MB</div>
+                <button class="btn primary" id="startBtn" style="margin-top:1rem">Lancer le pipeline</button>
+            `;
+            uploadZone.style.cursor = 'default';
+            document.getElementById('startBtn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                startProcessing();
+            });
+        }
+
+        async function startProcessing() {
+            if (!pendingFile) return;
+            const btn = document.getElementById('startBtn');
+            if (btn) btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', pendingFile);
+            formData.append('model', modelSelect.value);
+            formData.append('send_image', imageSelect.value);
+            formData.append('engine', engineSelect.value);
+
+            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+            const data = await res.json();
+
+            if (data.error) { alert(data.error); return; }
+
+            createJobCard(data.job_id, data.filename);
+            connectWebSocket(data.job_id);
+
+            // Reset upload zone
+            resetUploadZone();
+        }
+
+        function resetUploadZone() {
+            pendingFile = null;
+            settingsPanel.classList.remove('visible');
+            uploadZone.innerHTML = `
+                <div class="icon">📄</div>
+                <div class="label">Drop your <strong>PDF</strong> here — or click to browse</div>
+                <input type="file" id="fileInput" accept=".pdf">
+            `;
+            uploadZone.style.cursor = 'pointer';
+            document.getElementById('fileInput').addEventListener('change', () => {
+                const fi = document.getElementById('fileInput');
+                if (fi && fi.files[0]) showSettings(fi.files[0]);
+            });
+        }
+
+        // ── Job card UI ─────────────────────────────
+
+        function createJobCard(jobId, filename) {
+            const card = document.createElement('div');
+            card.className = 'job-card';
+            card.id = `job-${jobId}`;
+            card.innerHTML = `
+                <div class="job-header">
+                    <span class="job-filename">${filename}</span>
+                    <span class="job-status processing" id="status-${jobId}">Processing</span>
+                </div>
+                <div class="progress-wrap">
+                    <div class="progress-bar"><div class="progress-fill" id="fill-${jobId}"></div></div>
+                    <div class="progress-info">
+                        <span id="counter-${jobId}">Starting...</span>
+                        <span class="progress-stage" id="stage-${jobId}"></span>
+                    </div>
+                </div>
+                <div class="log" id="log-${jobId}"></div>
+                <div class="actions" id="actions-${jobId}" style="display:none">
+                    <a class="btn primary" id="dl-md-${jobId}" href="#">Download PDF</a>
+                </div>
+            `;
+            jobsContainer.prepend(card);
+        }
+
+        function updateProgress(jobId, page, total, stage) {
+            const pct = total > 0 ? (page / total * 100) : 0;
+            const fill = document.getElementById(`fill-${jobId}`);
+            const counter = document.getElementById(`counter-${jobId}`);
+            const stageEl = document.getElementById(`stage-${jobId}`);
+            const log = document.getElementById(`log-${jobId}`);
+
+            if (fill) fill.style.width = `${pct}%`;
+            if (counter) counter.textContent = `${page} / ${total} pages`;
+            if (stageEl) stageEl.textContent = stage;
+            if (log) {
+                const entry = document.createElement('div');
+                entry.className = 'entry';
+                entry.textContent = `Page ${page}: ${stage}`;
+                log.appendChild(entry);
+                log.scrollTop = log.scrollHeight;
+            }
+        }
+
+        function markDone(jobId) {
+            const status = document.getElementById(`status-${jobId}`);
+            if (status) { status.textContent = 'Done'; status.className = 'job-status done'; }
+            const actions = document.getElementById(`actions-${jobId}`);
+            if (actions) actions.style.display = 'flex';
+            const dl = document.getElementById(`dl-md-${jobId}`);
+            if (dl) dl.href = `/api/jobs/${jobId}/download`;
+        }
+
+        function markError(jobId, message) {
+            const status = document.getElementById(`status-${jobId}`);
+            if (status) { status.textContent = 'Error'; status.className = 'job-status error'; }
+            const log = document.getElementById(`log-${jobId}`);
+            if (log) {
+                const entry = document.createElement('div');
+                entry.className = 'error-msg';
+                entry.textContent = message;
+                log.appendChild(entry);
+            }
+        }
+
+        // ── WebSocket ───────────────────────────────
+
+        function connectWebSocket(jobId) {
+            const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const ws = new WebSocket(`${protocol}//${location.host}/ws/${jobId}`);
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                switch (data.type) {
+                    case 'progress':
+                        updateProgress(jobId, data.page, data.total, data.stage);
+                        break;
+                    case 'done':
+                        markDone(jobId);
+                        ws.close();
+                        break;
+                    case 'error':
+                        markError(jobId, data.message);
+                        ws.close();
+                        break;
+                    case 'status':
+                        if (data.status === 'done') markDone(jobId);
+                        else if (data.status === 'error') markError(jobId, data.error);
+                        else if (data.progress) updateProgress(jobId, data.progress, data.total, data.stage);
+                        break;
+                }
+            };
+
+            ws.onerror = () => markError(jobId, 'WebSocket connection lost');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+# ──────────────────────────────────────────────────────
+# STEM-Pipe — Configuration
+# Copy to config.yaml and fill in your API keys
+# ──────────────────────────────────────────────────────
+
+api_keys:
+  mathpix:
+    app_id: ""
+    app_key: ""
+  anthropic:
+    api_key: ""               # Required for Claude models
+  openai:
+    api_key: ""               # Required for GPT/o-series models
+
+# ── Pipeline settings ─────────────────────────────────
+
+extraction:
+  dpi: 400                    # Image resolution for PDF → PNG
+  engine: "vision"            # "mathpix" (best quality) or "vision" (free, LLM does OCR)
+
+preprocessing:
+  enabled: true
+  deskew: true                # Auto-correct page rotation
+  binarize: true              # Adaptive binarization for contrast
+  denoise: false              # Only enable for very noisy scans
+
+rewrite:
+  # ── Supported models ──
+  # Anthropic: claude-opus-4-20250514, claude-sonnet-4-20250514
+  # OpenAI:    o4-mini (best value), gpt-4.1, gpt-4o, o1, gpt-4.1-mini, gpt-4.1-nano
+  model: "o4-mini"            # Best quality/price ratio
+  send_source_image: true     # Send original image for cross-reference verification
+  language: "fr"              # Document language
+  output_style: "academic"    # "academic" | "textbook" | "notes"
+
+output:
+  format: "markdown"          # "markdown" | "latex" | "both"
+  merge_pages: true           # Merge all pages into one final document
+  generate_pdf: false         # Requires pandoc + texlive
+
+# ── Performance ───────────────────────────────────────
+
+concurrency:
+  extraction_batch_size: 5    # Pages extracted in parallel
+  max_retries: 3
+  retry_delay: 2              # Seconds between retries
+
+# ── Cache ─────────────────────────────────────────────
+
+cache:
+  enabled: true               # Resume interrupted runs
+  directory: ".cache"

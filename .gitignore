@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.cache/
+output/
+uploads/
+config.yaml
+.env
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+*.pdf
+*.tex
