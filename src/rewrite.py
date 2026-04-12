@@ -43,18 +43,17 @@ TABLEAUX — RÈGLES STRICTES :
 - Colonnes étroites (nombres, symboles) : type c, l ou r
 - Obligation d'envelopper dans \\begin{table}[H]\\centering...\\end{table}
 - Si le tableau est trop complexe ou large : envelopper dans \\begin{adjustbox}{max width=\\textwidth}
+- JAMAIS de \\begin{tikzpicture} à l'intérieur d'une cellule de tableau. Si une colonne contient des symboles ou schémas graphiques, les décrire en texte (ex : « rectangle hachuré », « cercle avec flèche »).
 
 FIGURES ET SCHÉMAS — RÈGLES STRICTES :
-- Schémas simples (repères, corps libres, diagrammes de forces, circuits) : OBLIGATOIREMENT en TikZ
+- Ne placer une figure QUE si elle est visuellement présente sur la page actuelle. Si le texte mentionne « la figure 3.2 » sans que cette figure soit visible sur l'image, conserver la référence textuelle telle quelle — NE PAS créer d'environnement figure.
+- Schémas simples (repère d'axes, vecteur force unique, cercle avec points) : TikZ autorisé
   \\begin{figure}[H]\\centering\\begin{tikzpicture}...\\end{tikzpicture}\\caption{...}\\end{figure}
-- Reproduire fidèlement : positions, directions des flèches, labels, angles, cotations
-- Pour les diagrammes de forces (bilan des efforts) : dessiner CHAQUE force comme un \\draw[->,thick] avec label
-- Pour les repères : axes x,y,z avec labels, origine marquée O
-- Figures trop complexes pour TikZ (photos, graphiques détaillés, courbes expérimentales) :
+- Tout le reste (mécanismes articulés, liaisons cinématiques, courbes, photos, schémas avec cotes) : OBLIGATOIREMENT le format encadré :
   \\begin{figure}[H]\\centering
-  \\fbox{\\parbox{0.9\\textwidth}{\\textit{\\textbf{Figure N.N :} Description complète de la figure originale, incluant : axes, grandeurs représentées, tendances des courbes, valeurs remarquables, légendes.}}}
+  \\fbox{\\parbox{0.9\\textwidth}{\\textit{\\textbf{Figure N.N :} Description complète de la figure originale, incluant : éléments représentés, positions relatives, directions des flèches/forces, labels, légendes.}}}
   \\caption{...}\\end{figure}
-- NE JAMAIS simplement écrire "Figure 3.2 — ..." comme du texte. Toute figure DOIT être dans un environnement figure.
+- NE JAMAIS simplement écrire "Figure 3.2 — ..." comme du texte. Toute figure présente sur la page DOIT être dans un environnement figure.
 - Texte normal : paragraphes LaTeX, \\textbf{} pour les définitions importantes
 
 Format de sortie STRICT :
@@ -104,18 +103,17 @@ TABLEAUX — RÈGLES STRICTES :
 - Colonnes étroites (nombres, symboles) : type c, l ou r
 - Obligation d'envelopper dans \\begin{table}[H]\\centering...\\end{table}
 - Si le tableau est trop complexe ou large : envelopper dans \\begin{adjustbox}{max width=\\textwidth}
+- JAMAIS de \\begin{tikzpicture} à l'intérieur d'une cellule de tableau. Si une colonne contient des symboles ou schémas graphiques, les décrire en texte (ex : « rectangle hachuré », « cercle avec flèche »).
 
 FIGURES ET SCHÉMAS — RÈGLES STRICTES :
-- Schémas simples (repères, corps libres, diagrammes de forces, circuits) : OBLIGATOIREMENT en TikZ
+- Ne placer une figure QUE si elle est visuellement présente sur la page actuelle. Si le texte mentionne « la figure 3.2 » sans que cette figure soit visible sur l'image, conserver la référence textuelle telle quelle — NE PAS créer d'environnement figure.
+- Schémas simples (repère d'axes, vecteur force unique, cercle avec points) : TikZ autorisé
   \\begin{figure}[H]\\centering\\begin{tikzpicture}...\\end{tikzpicture}\\caption{...}\\end{figure}
-- Reproduire fidèlement : positions, directions des flèches, labels, angles, cotations
-- Pour les diagrammes de forces (bilan des efforts) : dessiner CHAQUE force comme un \\draw[->,thick] avec label
-- Pour les repères : axes x,y,z avec labels, origine marquée O
-- Figures trop complexes pour TikZ (photos, graphiques détaillés, courbes expérimentales) :
+- Tout le reste (mécanismes articulés, liaisons cinématiques, courbes, photos, schémas avec cotes) : OBLIGATOIREMENT le format encadré :
   \\begin{figure}[H]\\centering
-  \\fbox{\\parbox{0.9\\textwidth}{\\textit{\\textbf{Figure N.N :} Description complète de la figure originale, incluant : axes, grandeurs représentées, tendances des courbes, valeurs remarquables, légendes.}}}
+  \\fbox{\\parbox{0.9\\textwidth}{\\textit{\\textbf{Figure N.N :} Description complète de la figure originale, incluant : éléments représentés, positions relatives, directions des flèches/forces, labels, légendes.}}}
   \\caption{...}\\end{figure}
-- NE JAMAIS simplement écrire "Figure 3.2 — ..." comme du texte. Toute figure DOIT être dans un environnement figure.
+- NE JAMAIS simplement écrire "Figure 3.2 — ..." comme du texte. Toute figure présente sur la page DOIT être dans un environnement figure.
 - Texte normal : paragraphes LaTeX, \\textbf{} pour les définitions importantes
 
 Format de sortie STRICT :
