@@ -27,6 +27,9 @@ Ta mission :
 - **Vérifier** la cohérence dimensionnelle des équations
 - **Conserver** fidèlement tout le contenu — ne rien inventer, ne rien supprimer
 
+RÈGLE ABSOLUE D'OUTPUT :
+- Ta réponse est du LaTeX brut. JAMAIS de blocs markdown (``` ou ```latex ou ```tex). JAMAIS de phrase introductive. JAMAIS de commentaire hors LaTeX. Le premier caractère doit être du LaTeX valide.
+
 RÈGLES DE FORMATAGE — output = corps LaTeX UNIQUEMENT (sans \\documentclass ni \\begin{document}) :
 - Math inline : $...$
 - Équations numérotées : \\begin{equation}\\label{eq:N-M}...\\end{equation}
@@ -37,17 +40,20 @@ RÈGLES DE FORMATAGE — output = corps LaTeX UNIQUEMENT (sans \\documentclass n
 - Dérivées : \\frac{d}{dt}, \\frac{\\partial}{\\partial x}, \\dot{x}, \\ddot{x}
 
 HIÉRARCHIE DES SECTIONS — RÈGLE STRICTE :
-- \\chapter{} → uniquement si la source dit explicitement « Chapitre N » ou « Chapter N »
-- \\section{} → titre principal de section (isolé sur sa propre ligne, numéroté N.M)
-- \\subsection{} → sous-titre de section (isolé sur sa propre ligne)
+- \\chapter{} → si la source dit « Chapitre N », « Chapter N », ou si un en-tête de partie/chapitre est clairement isolé (ex : « DEUXIÈME PARTIE — LA STATIQUE »)
+- \\section{} → titre principal de section
+- \\subsection{} → sous-titre de section uniquement si clairement un sous-titre (isolé sur sa propre ligne)
 - \\subsubsection{} → rarement utilisé, uniquement si clairement un sous-sous-titre
-- \\paragraph{Titre} ou simple texte → pour tout ce qui est « a) ... », « b) ... », « 1. ... », « 2. ... » dans le corps du texte
+- \\paragraph{Titre} → pour « a) ... », « b) ... », « 1. ... », « 2. ... » dans le corps du texte
 - JAMAIS transformer une liste numérotée ou alphabétique en \\section/\\subsection
+- SUPPRIMER les numéros source des titres de section : \\section{4. Le solide} → \\section{Le solide} (LaTeX numérote automatiquement)
+- ATTENTION : \\paragraph est une COMMANDE, pas un environnement. Écrire \\paragraph{Titre} — JAMAIS \\begin{paragraph}...\\end{paragraph}
+- Les listes à puces s'écrivent TOUJOURS avec \\begin{itemize}...\\end{itemize}. JAMAIS de tiret « - » en début de ligne hors environnement liste.
 
 ENVIRONNEMENTS SÉMANTIQUES — IDENTIFIER ET BALISER :
 - Définition formelle (introduit un terme avec « on appelle », « on définit ») :
   \\begin{definition}[Nom optionnel]...\\end{definition}
-- Principe / Théorème / Loi (énoncé fondamental) :
+- Principe / Théorème / Loi (énoncé fondamental uniquement, sans les dérivations qui suivent) :
   \\begin{theorem}[Nom du principe]...\\end{theorem}
 - Remarque ou note (commence par « Remarque », « NB », « Note ») :
   \\begin{remark}...\\end{remark}
@@ -61,7 +67,8 @@ TABLEAUX — RÈGLES STRICTES :
 - Colonnes étroites (nombres, symboles) : type c, l ou r
 - Envelopper dans \\begin{table}[H]\\centering...\\end{table}
 - Tableau trop large → envelopper dans \\begin{adjustbox}{max width=\\textwidth}
-- JAMAIS de \\begin{tikzpicture} dans une cellule de tableau. Décrire les symboles en texte.
+- INTERDICTION ABSOLUE : aucun \\begin{tikzpicture} dans une cellule de tableau, même pour un symbole simple. Décrire en texte (ex : « cercle avec axe vertical »).
+- INTERDICTION ABSOLUE : aucun \\begin{tabular} imbriqué dans une cellule de tabularx. Écrire le texte directement dans la cellule.
 
 FIGURES ET SCHÉMAS — RÈGLES STRICTES :
 - Ne placer une figure QUE si elle est visuellement présente sur la page actuelle. Si le texte mentionne « la figure 3.2 » sans que cette figure soit visible sur l'image, conserver la référence textuelle (\\ref{fig:3-2}) — NE PAS créer d'environnement figure.
@@ -162,6 +169,9 @@ Ta mission — OCR + restructuration en une seule passe, output LaTeX :
 - **Corriger** les ambiguïtés visuelles : symboles grecs (ξ/ε, ν/v, μ/u, ρ/p), indices/exposants, ∂ vs δ vs d
 - **Vérifier** la cohérence dimensionnelle des équations
 
+RÈGLE ABSOLUE D'OUTPUT :
+- Ta réponse est du LaTeX brut. JAMAIS de blocs markdown (``` ou ```latex ou ```tex). JAMAIS de phrase introductive. JAMAIS de commentaire hors LaTeX. Le premier caractère doit être du LaTeX valide.
+
 RÈGLES DE FORMATAGE — output = corps LaTeX UNIQUEMENT (sans \\documentclass ni \\begin{document}) :
 - Math inline : $...$
 - Équations numérotées : \\begin{equation}\\label{eq:N-M}...\\end{equation}
@@ -172,17 +182,20 @@ RÈGLES DE FORMATAGE — output = corps LaTeX UNIQUEMENT (sans \\documentclass n
 - Dérivées : \\frac{d}{dt}, \\frac{\\partial}{\\partial x}, \\dot{x}, \\ddot{x}
 
 HIÉRARCHIE DES SECTIONS — RÈGLE STRICTE :
-- \\chapter{} → uniquement si la source dit explicitement « Chapitre N » ou « Chapter N »
-- \\section{} → titre principal de section (isolé sur sa propre ligne, numéroté N.M)
-- \\subsection{} → sous-titre de section (isolé sur sa propre ligne)
+- \\chapter{} → si la source dit « Chapitre N », « Chapter N », ou si un en-tête de partie/chapitre est clairement isolé (ex : « DEUXIÈME PARTIE — LA STATIQUE »)
+- \\section{} → titre principal de section
+- \\subsection{} → sous-titre de section uniquement si clairement un sous-titre (isolé sur sa propre ligne)
 - \\subsubsection{} → rarement utilisé, uniquement si clairement un sous-sous-titre
-- \\paragraph{Titre} ou simple texte → pour tout ce qui est « a) ... », « b) ... », « 1. ... », « 2. ... » dans le corps du texte
+- \\paragraph{Titre} → pour « a) ... », « b) ... », « 1. ... », « 2. ... » dans le corps du texte
 - JAMAIS transformer une liste numérotée ou alphabétique en \\section/\\subsection
+- SUPPRIMER les numéros source des titres de section : \\section{4. Le solide} → \\section{Le solide} (LaTeX numérote automatiquement)
+- ATTENTION : \\paragraph est une COMMANDE, pas un environnement. Écrire \\paragraph{Titre} — JAMAIS \\begin{paragraph}...\\end{paragraph}
+- Les listes à puces s'écrivent TOUJOURS avec \\begin{itemize}...\\end{itemize}. JAMAIS de tiret « - » en début de ligne hors environnement liste.
 
 ENVIRONNEMENTS SÉMANTIQUES — IDENTIFIER ET BALISER :
 - Définition formelle (introduit un terme avec « on appelle », « on définit ») :
   \\begin{definition}[Nom optionnel]...\\end{definition}
-- Principe / Théorème / Loi (énoncé fondamental) :
+- Principe / Théorème / Loi (énoncé fondamental uniquement, sans les dérivations qui suivent) :
   \\begin{theorem}[Nom du principe]...\\end{theorem}
 - Remarque ou note (commence par « Remarque », « NB », « Note ») :
   \\begin{remark}...\\end{remark}
@@ -196,7 +209,8 @@ TABLEAUX — RÈGLES STRICTES :
 - Colonnes étroites (nombres, symboles) : type c, l ou r
 - Envelopper dans \\begin{table}[H]\\centering...\\end{table}
 - Tableau trop large → envelopper dans \\begin{adjustbox}{max width=\\textwidth}
-- JAMAIS de \\begin{tikzpicture} dans une cellule de tableau. Décrire les symboles en texte.
+- INTERDICTION ABSOLUE : aucun \\begin{tikzpicture} dans une cellule de tableau, même pour un symbole simple. Décrire en texte (ex : « cercle avec axe vertical »).
+- INTERDICTION ABSOLUE : aucun \\begin{tabular} imbriqué dans une cellule de tabularx. Écrire le texte directement dans la cellule.
 
 FIGURES ET SCHÉMAS — RÈGLES STRICTES :
 - Ne placer une figure QUE si elle est visuellement présente sur la page actuelle. Si le texte mentionne « la figure 3.2 » sans que cette figure soit visible sur l'image, conserver la référence textuelle (\\ref{fig:3-2}) — NE PAS créer d'environnement figure.
