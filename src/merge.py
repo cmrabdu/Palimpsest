@@ -7,9 +7,16 @@ logger = logging.getLogger(__name__)
 
 LATEX_PREAMBLE = r"""\documentclass[12pt,a4paper]{report}
 
-% Encodage et langue
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
+% Encodage et langue — compatible xelatex ET pdflatex (Overleaf)
+\usepackage{iftex}
+\ifXeTeX
+  \usepackage{fontspec}
+\else\ifLuaTeX
+  \usepackage{fontspec}
+\else
+  \usepackage[utf8]{inputenc}
+  \usepackage[T1]{fontenc}
+\fi\fi
 \usepackage[french]{babel}
 
 % Maths
