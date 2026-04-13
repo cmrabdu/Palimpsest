@@ -336,12 +336,32 @@ def detect_provider(model: str) -> Provider:
     return Provider.OPENAI
 
 
+_MAX_IMAGE_BYTES = 4 * 1024 * 1024  # 4 MB raw → safely under 5 MB after base64 (×1.33)
+
+
 def image_to_base64(image: Image.Image) -> str:
-    """Convert PIL Image to base64 PNG string."""
-    buffer = io.BytesIO()
-    if image.mode != "RGB":
+    """Convert a PIL Image to a base64-encoded JPEG string, scaling down if needed.
+
+    Anthropic enforces a 5 MB limit on the base64 payload (≈3.75 MB raw).
+    We target 4 MB raw to leave headroom.  Strategy:
+    1. Try JPEG quality=85 at original resolution.
+    2. If still too large, halve the longest dimension and retry (max 3 iterations).
+    """
+    if image.mode not in ("RGB", "L"):
         image = image.convert("RGB")
-    image.save(buffer, format="PNG")
+
+    img = image
+    for attempt in range(4):
+        buffer = io.BytesIO()
+        img.save(buffer, format="JPEG", quality=85, optimize=True)
+        raw_bytes = buffer.tell()
+        if raw_bytes <= _MAX_IMAGE_BYTES:
+            break
+        # Shrink by 50% on each axis
+        w, h = img.size
+        img = img.resize((w // 2, h // 2), Image.LANCZOS)
+        logger.debug(f"Image too large ({raw_bytes} bytes), resizing to {img.size}")
+
     return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 
@@ -384,7 +404,7 @@ async def _rewrite_anthropic(
         b64 = image_to_base64(source_image)
         content.append({
             "type": "image",
-            "source": {"type": "base64", "media_type": "image/png", "data": b64},
+            "source": {"type": "base64", "media_type": "image/jpeg", "data": b64},
         })
 
     context_block = context.to_yaml_block()
@@ -452,7 +472,7 @@ async def _rewrite_openai(
         b64 = image_to_base64(source_image)
         content.append({
             "type": "image_url",
-            "image_url": {"url": f"data:image/png;base64,{b64}", "detail": "high"},
+            "image_url": {"url": f"data:image/jpeg;base64,{b64}", "detail": "high"},
         })
 
     context_block = context.to_yaml_block()
