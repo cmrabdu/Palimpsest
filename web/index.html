@@ -1,316 +1,491 @@
 <!DOCTYPE html>
-<html lang="fr">
+<!--
+  \documentclass[mystique]{palimpsest}
+  % Vous lisez le source HTML.
+  % Bienvenue dans les coulisses.
+  % Le vrai document est ailleurs — sous la surface.
+-->
+<html lang="fr" data-mode="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Palimpsest</title>
+    <title>Palimpsest — PDF → LaTeX</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="apple-touch-icon" href="/favicon.svg">
-    <meta name="theme-color" content="#0a0a0f">
-    <meta name="description" content="Scanned PDFs → Clean LaTeX documents">
+    <meta name="theme-color" content="#080810">
+    <meta name="description" content="Scanned PDFs → Clean LaTeX documents via OCR + LLM">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        :root {
-            --bg: #0a0a0f;
-            --surface: #12121a;
-            --surface-2: #1a1a25;
-            --border: #2a2a3a;
-            --text: #e4e4ef;
-            --text-2: #8888a0;
-            --accent: #6c8cff;
-            --accent-glow: #6c8cff33;
-            --green: #4ade80;
-            --red: #f87171;
-            --radius: 12px;
-            --font: 'SF Pro Display', -apple-system, system-ui, sans-serif;
-            --mono: 'SF Mono', 'Fira Code', monospace;
-        }
+    /* ── TOKENS ──────────────────────── */
+    :root {
+        --bg:         #07070e;
+        --surface:    #0f0f1a;
+        --surface-2:  #161624;
+        --surface-3:  #1e1e30;
+        --border:     #22223a;
+        --border-hi:  #323255;
+        --text:       #ddddef;
+        --text-2:     #7070a0;
+        --text-3:     #40406a;
+        --accent:     #6c8cff;
+        --accent-dim: #4a68e0;
+        --accent-lo:  #6c8cff18;
+        --accent-mid: #6c8cff33;
+        --green:      #4ade80;
+        --red:        #f87171;
+        --r:          14px;
+        --r-sm:       8px;
+        --font:       'Inter', -apple-system, system-ui, sans-serif;
+        --mono:       'JetBrains Mono', 'Fira Code', monospace;
+    }
 
-        body {
-            font-family: var(--font);
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem;
-        }
+    /* ── PARCHEMIN OVERRIDE ──────────── */
+    html[data-mode="parchemin"] {
+        --bg:         #f0e6cc;
+        --surface:    #e7dab8;
+        --surface-2:  #dccfa6;
+        --surface-3:  #d0c090;
+        --border:     #b09060;
+        --border-hi:  #907040;
+        --text:       #1c1005;
+        --text-2:     #5a3818;
+        --text-3:     #8a6838;
+        --accent:     #8b3a0a;
+        --accent-dim: #5c2606;
+        --accent-lo:  #8b3a0a12;
+        --accent-mid: #8b3a0a28;
+        --green:      #2d5916;
+        --red:        #8b1a1a;
+        --font: 'Georgia', 'Palatino Linotype', serif;
+    }
 
-        .container {
-            max-width: 640px;
-            width: 100%;
-        }
+    /* ── BASE ───────────────────────── */
+    html { color-scheme: dark; }
+    html[data-mode="parchemin"] { color-scheme: light; }
 
-        /* Header */
-        .header {
-            text-align: center;
-            margin-bottom: 2.5rem;
-        }
+    body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 3rem 1.5rem 5rem;
+    }
 
-        .header h1 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-        }
+    /* Film-grain overlay */
+    body::before {
+        content: '';
+        position: fixed; inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23g)'/%3E%3C/svg%3E");
+        opacity: 0.028;
+        pointer-events: none;
+        z-index: 9999;
+    }
 
-        .header h1 span {
-            color: var(--accent);
-        }
+    /* Ambient top glow */
+    body::after {
+        content: '';
+        position: fixed;
+        top: -30%; left: 50%;
+        transform: translateX(-50%);
+        width: 700px; height: 500px;
+        background: radial-gradient(ellipse, var(--accent-lo) 0%, transparent 68%);
+        pointer-events: none;
+        z-index: 0;
+    }
 
-        .header p {
-            color: var(--text-2);
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-        }
+    .container {
+        max-width: 600px;
+        width: 100%;
+        position: relative;
+        z-index: 1;
+    }
 
-        /* Upload zone */
-        .upload-zone {
-            border: 2px dashed var(--border);
-            border-radius: var(--radius);
-            padding: 3rem 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            background: var(--surface);
-        }
+    /* ── HEADER ─────────────────────── */
+    .header {
+        text-align: center;
+        margin-bottom: 2.75rem;
+        animation: slideUp 0.65s cubic-bezier(0.16,1,0.3,1) both;
+    }
 
-        .upload-zone:hover, .upload-zone.drag-over {
-            border-color: var(--accent);
-            background: var(--accent-glow);
-        }
+    .logo {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.45rem;
+        cursor: default;
+        user-select: none;
+    }
+    .logo-slashes {
+        font-family: var(--mono);
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--accent);
+        letter-spacing: -0.04em;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+    .logo:hover .logo-slashes { opacity: 1; }
+    .logo-name {
+        font-size: 2.1rem;
+        font-weight: 700;
+        letter-spacing: -0.045em;
+        color: var(--text);
+        line-height: 1;
+    }
+    .header-tagline {
+        margin-top: 0.7rem;
+        font-size: 0.78rem;
+        color: var(--text-3);
+        letter-spacing: 0.04em;
+        font-family: var(--mono);
+    }
+    .header-tagline em { color: var(--accent); opacity: 0.6; font-style: normal; }
 
-        .upload-zone .icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
+    /* ── UPLOAD ZONE ────────────────── */
+    .upload-zone {
+        border: 1.5px dashed var(--border-hi);
+        border-radius: var(--r);
+        padding: 3rem 2rem 2.5rem;
+        text-align: center;
+        cursor: pointer;
+        background: var(--surface);
+        position: relative;
+        overflow: hidden;
+        transition: border-color 0.18s, background 0.18s;
+        animation: slideUp 0.65s 0.07s cubic-bezier(0.16,1,0.3,1) both;
+    }
 
-        .upload-zone .label {
-            font-size: 1rem;
-            color: var(--text-2);
-        }
+    /* Scanner sweep */
+    .upload-zone::after {
+        content: '';
+        position: absolute;
+        left: 0; right: 0;
+        height: 1.5px;
+        background: linear-gradient(90deg,
+            transparent 0%, var(--accent-mid) 25%,
+            var(--accent) 50%, var(--accent-mid) 75%, transparent 100%);
+        box-shadow: 0 0 10px 3px var(--accent-mid);
+        top: -4px;
+        opacity: 0;
+        transition: opacity 0.25s;
+    }
+    .upload-zone:hover {
+        border-color: var(--accent);
+        border-style: solid;
+        background: var(--surface-2);
+    }
+    .upload-zone:hover::after {
+        opacity: 1;
+        animation: scan 2.4s cubic-bezier(0.4,0,0.6,1) infinite;
+    }
+    .upload-zone.drag-over {
+        border-color: var(--accent);
+        border-style: solid;
+        background: var(--accent-lo);
+    }
+    .upload-zone.drag-over::after {
+        opacity: 1;
+        animation: scan 1.1s linear infinite;
+    }
+    @keyframes scan {
+        0%   { top: -2px; }
+        50%  { top: calc(100% + 2px); }
+        100% { top: -2px; }
+    }
 
-        .upload-zone .label strong {
-            color: var(--accent);
-        }
+    .doc-icon {
+        display: block;
+        margin: 0 auto 1.4rem;
+        transition: transform 0.2s;
+    }
+    .upload-zone:hover .doc-icon { transform: translateY(-3px); }
 
-        .upload-zone input {
-            display: none;
-        }
+    .upload-label {
+        font-size: 0.9rem;
+        color: var(--text-2);
+        line-height: 1.5;
+    }
+    .upload-label strong { color: var(--accent); font-weight: 600; }
+    .upload-hint {
+        margin-top: 0.45rem;
+        font-size: 0.7rem;
+        color: var(--text-3);
+        font-family: var(--mono);
+    }
 
-        /* Settings panel */
-        .settings {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1.25rem;
-            margin-top: 1rem;
-            display: none;
-        }
+    /* ── SETTINGS ───────────────────── */
+    .settings {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 1.2rem 1.5rem;
+        margin-top: 0.75rem;
+        display: none;
+        animation: slideDown 0.22s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    .settings.visible { display: block; }
+    .settings-title {
+        font-size: 0.65rem;
+        color: var(--text-3);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-weight: 600;
+        margin-bottom: 0.9rem;
+    }
+    .setting-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.65rem;
+    }
+    .setting-label { font-size: 0.8rem; color: var(--text-2); flex-shrink: 0; }
+    .setting-row select {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--r-sm);
+        padding: 0.3rem 0.65rem;
+        color: var(--text);
+        font-size: 0.75rem;
+        font-family: var(--mono);
+        cursor: pointer;
+        transition: border-color 0.12s;
+        flex: 1; max-width: 260px;
+    }
+    .setting-row select:focus { outline: none; border-color: var(--accent); }
+    .cost-pill {
+        margin-top: 0.8rem;
+        padding: 0.55rem 1rem;
+        background: var(--surface-2);
+        border-radius: 100px;
+        font-size: 0.73rem;
+        color: var(--text-3);
+        font-family: var(--mono);
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .cost-value { color: var(--green); font-weight: 500; }
 
-        .settings.visible { display: block; }
+    /* ── BUTTONS ────────────────────── */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.5rem 1.1rem;
+        border-radius: var(--r-sm);
+        border: 1px solid var(--border-hi);
+        background: var(--surface-2);
+        color: var(--text);
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: border-color 0.12s, color 0.12s, background 0.12s;
+        text-decoration: none;
+        font-family: var(--font);
+        white-space: nowrap;
+    }
+    .btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lo); }
+    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+    .btn.primary:hover { background: var(--accent-dim); border-color: var(--accent-dim); color: #fff; }
+    .btn.disabled, .btn:disabled { opacity: 0.3; pointer-events: none; cursor: not-allowed; }
 
-        .settings h3 {
-            font-size: 0.85rem;
-            color: var(--text-2);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 1rem;
-        }
+    /* ── JOB CARD ───────────────────── */
+    .job-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 1.35rem 1.5rem;
+        margin-top: 1rem;
+        animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1) both;
+        transition: border-color 0.3s;
+    }
+    .job-card.is-done  { border-color: #4ade8028; }
+    .job-card.is-error { border-color: #f8717128; }
 
-        .setting-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.75rem;
-        }
+    .job-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.9rem;
+    }
+    .job-filename {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        color: var(--text);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .job-status {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.68rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        padding: 0.2rem 0.65rem;
+        border-radius: 100px;
+    }
+    .status-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .job-status.processing { background: var(--accent-lo); color: var(--accent); }
+    .job-status.processing .status-dot { background: var(--accent); animation: pulseDot 1.5s ease-in-out infinite; }
+    .job-status.done  { background: #4ade8015; color: var(--green); }
+    .job-status.done  .status-dot { background: var(--green); }
+    .job-status.error { background: #f8717115; color: var(--red); }
+    .job-status.error .status-dot { background: var(--red); }
+    @keyframes pulseDot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%       { opacity: 0.25; transform: scale(0.5); }
+    }
 
-        .setting-row label {
-            font-size: 0.85rem;
-            color: var(--text);
-        }
+    /* ── PROGRESS ───────────────────── */
+    .progress-bar {
+        height: 3px;
+        background: var(--surface-3);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-bottom: 0.45rem;
+    }
+    .progress-fill {
+        height: 100%;
+        border-radius: 2px;
+        background: var(--accent);
+        transition: width 0.45s cubic-bezier(0.22,1,0.36,1);
+        width: 0%;
+    }
+    .progress-fill.active {
+        background: linear-gradient(90deg,
+            var(--accent-dim) 0%, var(--accent) 35%, #b0c8ff 65%, var(--accent) 100%);
+        background-size: 300% 100%;
+        animation: shimmer 1.6s linear infinite;
+    }
+    @keyframes shimmer {
+        0%   { background-position: 100% center; }
+        100% { background-position: -100% center; }
+    }
+    .progress-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.7rem;
+        color: var(--text-3);
+    }
+    .progress-stage { font-family: var(--mono); color: var(--text-2); }
 
-        .setting-row select {
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 0.4rem 0.75rem;
-            color: var(--text);
-            font-size: 0.8rem;
-            font-family: var(--mono);
-            cursor: pointer;
-        }
+    /* ── LOG ────────────────────────── */
+    .log {
+        margin-top: 0.75rem;
+        max-height: 130px;
+        overflow-y: auto;
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        line-height: 1.75;
+        color: var(--text-3);
+        background: var(--surface-2);
+        border-radius: var(--r-sm);
+        padding: 0.6rem 0.9rem;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border) transparent;
+    }
+    .log .entry { color: var(--text-3); }
+    .log .entry.latest { color: var(--text-2); }
+    .log-error { color: var(--red) !important; margin-top: 0.2rem; }
 
-        .setting-row select:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
+    /* ── ACTIONS ────────────────────── */
+    .actions { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-top: 1rem; }
 
-        .cost-estimate {
-            margin-top: 0.75rem;
-            padding: 0.75rem;
-            background: var(--surface-2);
-            border-radius: 8px;
-            font-size: 0.8rem;
-            color: var(--text-2);
-            font-family: var(--mono);
-            text-align: center;
-        }
+    /* ── TOAST ──────────────────────── */
+    #toast {
+        position: fixed;
+        bottom: 2rem; left: 50%;
+        transform: translateX(-50%) translateY(calc(100% + 2rem));
+        background: var(--surface-3);
+        border: 1px solid var(--border-hi);
+        color: var(--text);
+        padding: 0.55rem 1.3rem;
+        border-radius: 100px;
+        font-size: 0.78rem;
+        font-family: var(--mono);
+        z-index: 99999;
+        opacity: 0;
+        transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.25s;
+        white-space: nowrap;
+        pointer-events: none;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-        .cost-estimate .price {
-            color: var(--green);
-            font-weight: 600;
-            font-size: 1rem;
-        }
+    /* ── ANIMATIONS ─────────────────── */
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
 
-        /* Job card */
-        .job-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            margin-top: 1.5rem;
-        }
-
-        .job-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .job-filename {
-            font-family: var(--mono);
-            font-size: 0.85rem;
-            color: var(--text);
-        }
-
-        .job-status {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 100px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .job-status.processing { background: var(--accent-glow); color: var(--accent); }
-        .job-status.done { background: #4ade8022; color: var(--green); }
-        .job-status.error { background: #f8717122; color: var(--red); }
-
-        /* Progress bar */
-        .progress-wrap {
-            margin: 1rem 0;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: var(--surface-2);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--accent);
-            border-radius: 3px;
-            transition: width 0.3s ease;
-            width: 0%;
-        }
-
-        .progress-info {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 0.5rem;
-            font-size: 0.8rem;
-            color: var(--text-2);
-        }
-
-        .progress-stage {
-            font-family: var(--mono);
-            font-size: 0.75rem;
-        }
-
-        /* Actions */
-        .actions {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: 1.25rem;
-        }
-
-        .btn {
-            padding: 0.6rem 1.25rem;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--surface-2);
-            color: var(--text);
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            text-decoration: none;
-            font-family: var(--font);
-        }
-
-        .btn:hover { border-color: var(--accent); color: var(--accent); }
-        .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-        .btn.primary:hover { opacity: 0.9; }
-        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-        /* Log */
-        .log {
-            margin-top: 1rem;
-            max-height: 200px;
-            overflow-y: auto;
-            font-family: var(--mono);
-            font-size: 0.75rem;
-            color: var(--text-2);
-            background: var(--surface-2);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            line-height: 1.6;
-        }
-
-        .log .entry { opacity: 0.7; }
-        .log .entry:last-child { opacity: 1; color: var(--text); }
-
-        /* Error */
-        .error-msg {
-            color: var(--red);
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
-            font-family: var(--mono);
-        }
+    /* ── MISC ───────────────────────── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
     </style>
 </head>
 <body>
+    <div id="toast"></div>
     <div class="container">
-        <div class="header">
-            <h1><span>//</span> Palimpsest</h1>
-            <p>Scanned PDFs → Clean LaTeX documents</p>
-        </div>
+
+        <header class="header">
+            <div class="logo" id="logo" title="Cliquez 5× pour une surprise">
+                <span class="logo-slashes">//</span>
+                <span class="logo-name">Palimpsest</span>
+            </div>
+            <p class="header-tagline">
+                <em>scan</em> → ocr → llm → <em>LaTeX</em>
+            </p>
+        </header>
 
         <div class="upload-zone" id="uploadZone">
-            <div class="icon">📄</div>
-            <div class="label">Drop your <strong>PDF</strong> here — or click to browse</div>
-            <input type="file" id="fileInput" accept=".pdf">
+            <svg class="doc-icon" width="52" height="60" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 6C4 3.8 5.8 2 8 2H34L50 18V54C50 56.2 48.2 58 46 58H8C5.8 58 4 56.2 4 54V6Z"
+                      fill="var(--surface-3)" stroke="var(--accent)" stroke-width="1.4" stroke-opacity="0.8"/>
+                <path d="M34 2V15C34 16.7 35.3 18 37 18H50"
+                      fill="none" stroke="var(--accent)" stroke-width="1.4" stroke-opacity="0.5"/>
+                <line x1="13" y1="25" x2="41" y2="25" stroke="var(--accent)" stroke-width="1.1" stroke-opacity="0.18"/>
+                <text x="13" y="35" fill="var(--accent)" font-size="7.5" opacity="0.5" font-family="Georgia, serif">∫ f(x) dx = F(x)</text>
+                <line x1="13" y1="42" x2="36" y2="42" stroke="var(--accent)" stroke-width="1" stroke-opacity="0.12"/>
+                <line x1="13" y1="48" x2="28" y2="48" stroke="var(--accent)" stroke-width="1" stroke-opacity="0.08"/>
+            </svg>
+            <div class="upload-label">
+                Déposez votre <strong>PDF</strong> ici — ou cliquez pour parcourir
+            </div>
+            <div class="upload-hint">PDF · scan, manuscrit, STEM</div>
+            <input type="file" id="fileInput" accept=".pdf" style="display:none">
         </div>
 
         <div class="settings" id="settingsPanel">
-            <h3>⚙ Configuration</h3>
+            <div class="settings-title">Configuration</div>
             <div class="setting-row">
-                <label>Modèle de réécriture</label>
+                <span class="setting-label">Modèle</span>
                 <select id="modelSelect">
-                    <optgroup label="OpenAI — Best value">
+                    <optgroup label="OpenAI">
                         <option value="o4-mini" selected>o4-mini · ~$0.027/p</option>
                         <option value="gpt-4.1">GPT-4.1 · ~$0.041/p</option>
                         <option value="gpt-4o">GPT-4o · ~$0.049/p</option>
                         <option value="gpt-4.1-mini">GPT-4.1-mini · ~$0.016/p</option>
                         <option value="gpt-4.1-nano">GPT-4.1-nano · ~$0.012/p</option>
                     </optgroup>
-                    <optgroup label="Anthropic — Premium">
+                    <optgroup label="Anthropic">
                         <option value="claude-opus-4-20250514">Claude Opus · ~$0.098/p</option>
                         <option value="claude-sonnet-4-20250514">Claude Sonnet · ~$0.063/p</option>
                     </optgroup>
@@ -320,21 +495,22 @@
                 </select>
             </div>
             <div class="setting-row">
-                <label>Envoyer l'image source</label>
+                <span class="setting-label">Image source</span>
                 <select id="imageSelect">
-                    <option value="true" selected>Oui (meilleure précision)</option>
-                    <option value="false">Non (moins cher)</option>
+                    <option value="true" selected>Oui — meilleure précision</option>
+                    <option value="false">Non — moins cher</option>
                 </select>
             </div>
             <div class="setting-row">
-                <label>Mode OCR</label>
+                <span class="setting-label">Mode OCR</span>
                 <select id="engineSelect">
-                    <option value="vision" selected>Vision directe (gratuit, pas de Mathpix)</option>
-                    <option value="mathpix">Mathpix ($0.005/p, meilleur sur formules)</option>
+                    <option value="vision" selected>Vision directe (pas de Mathpix)</option>
+                    <option value="mathpix">Mathpix (+$0.005/p, formules++)</option>
                 </select>
             </div>
-            <div class="cost-estimate" id="costEstimate">
-                Coût estimé : <span class="price">—</span>
+            <div class="cost-pill">
+                <span>coût estimé</span>
+                <span class="cost-value" id="costValue">—</span>
             </div>
         </div>
 
@@ -342,238 +518,284 @@
     </div>
 
     <script>
-        const uploadZone = document.getElementById('uploadZone');
-        const fileInput = document.getElementById('fileInput');
-        const jobsContainer = document.getElementById('jobsContainer');
-        const settingsPanel = document.getElementById('settingsPanel');
-        const modelSelect = document.getElementById('modelSelect');
-        const imageSelect = document.getElementById('imageSelect');
-        const engineSelect = document.getElementById('engineSelect');
-        const costEstimate = document.getElementById('costEstimate');
+    'use strict';
 
-        // ── Cost per page data (with image) ─────────
-        const COSTS = {
-            'o4-mini':                  { withImg: 0.027, noImg: 0.023 },
-            'gpt-4.1':                  { withImg: 0.041, noImg: 0.033 },
-            'gpt-4o':                   { withImg: 0.049, noImg: 0.039 },
-            'gpt-4.1-mini':             { withImg: 0.016, noImg: 0.015 },
-            'gpt-4.1-nano':             { withImg: 0.012, noImg: 0.011 },
-            'claude-opus-4-20250514':   { withImg: 0.098, noImg: 0.078 },
-            'claude-sonnet-4-20250514': { withImg: 0.063, noImg: 0.051 },
-            'o1':                       { withImg: 0.243, noImg: 0.183 },
-        };
+    // ── Refs ─────────────────────────────────────────────
+    const uploadZone    = document.getElementById('uploadZone');
+    const settingsPanel = document.getElementById('settingsPanel');
+    const modelSelect   = document.getElementById('modelSelect');
+    const imageSelect   = document.getElementById('imageSelect');
+    const engineSelect  = document.getElementById('engineSelect');
+    const costValue     = document.getElementById('costValue');
+    const jobsContainer = document.getElementById('jobsContainer');
+    const logoEl        = document.getElementById('logo');
+    const toastEl       = document.getElementById('toast');
 
-        let pendingFile = null;
+    // ── Cost table ───────────────────────────────────────
+    const COSTS = {
+        'o4-mini':                  { w: 0.027, n: 0.023 },
+        'gpt-4.1':                  { w: 0.041, n: 0.033 },
+        'gpt-4o':                   { w: 0.049, n: 0.039 },
+        'gpt-4.1-mini':             { w: 0.016, n: 0.015 },
+        'gpt-4.1-nano':             { w: 0.012, n: 0.011 },
+        'claude-opus-4-20250514':   { w: 0.098, n: 0.078 },
+        'claude-sonnet-4-20250514': { w: 0.063, n: 0.051 },
+        'o1':                       { w: 0.243, n: 0.183 },
+    };
 
-        function updateCostEstimate() {
-            const model = modelSelect.value;
-            const sendImg = imageSelect.value === 'true';
-            const engine = engineSelect.value;
-            const info = COSTS[model];
-            if (!info || !pendingFile) return;
-            const estPages = Math.max(1, Math.round(pendingFile.size / 400000));
-            const costPer = sendImg ? info.withImg : info.noImg;
-            const mathpixCost = engine === 'mathpix' ? 0.005 : 0;
-            const total = (estPages * (costPer + mathpixCost)).toFixed(2);
-            const engineLabel = engine === 'vision' ? 'vision directe' : 'Mathpix';
-            costEstimate.innerHTML = `~${estPages} pages · ${engineLabel} · <span class="price">~$${total}</span>`;
+    let pendingFile = null;
+
+    // ── Cost estimate ─────────────────────────────────────
+    function updateCostEstimate() {
+        if (!pendingFile) return;
+        const info = COSTS[modelSelect.value];
+        if (!info) return;
+        const sendImg = imageSelect.value === 'true';
+        const engine  = engineSelect.value;
+        const pages   = Math.max(1, Math.round(pendingFile.size / 400_000));
+        const cost    = (pages * ((sendImg ? info.w : info.n) + (engine === 'mathpix' ? 0.005 : 0))).toFixed(2);
+        costValue.textContent = `~${pages}p · ${engine === 'vision' ? 'vision' : 'Mathpix'} · ~$${cost}`;
+    }
+
+    modelSelect.addEventListener('change', updateCostEstimate);
+    imageSelect.addEventListener('change', updateCostEstimate);
+    engineSelect.addEventListener('change', updateCostEstimate);
+
+    // ── Upload events ─────────────────────────────────────
+    uploadZone.addEventListener('click', () => { if (!pendingFile) document.getElementById('fileInput')?.click(); });
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+    uploadZone.addEventListener('dragleave', e => { if (!uploadZone.contains(e.relatedTarget)) uploadZone.classList.remove('drag-over'); });
+    uploadZone.addEventListener('drop', e => {
+        e.preventDefault();
+        uploadZone.classList.remove('drag-over');
+        const f = e.dataTransfer.files[0];
+        if (f && f.name.toLowerCase().endsWith('.pdf')) showSettings(f);
+        else if (f) showToast('⚠ Fichier PDF requis');
+    });
+    document.getElementById('fileInput').addEventListener('change', e => {
+        if (e.target.files[0]) showSettings(e.target.files[0]);
+    });
+
+    // ── Show settings after file pick ─────────────────────
+    function showSettings(file) {
+        pendingFile = file;
+        settingsPanel.classList.add('visible');
+        updateCostEstimate();
+        const mb = (file.size / 1048576).toFixed(1);
+        uploadZone.innerHTML = `
+            <svg class="doc-icon" width="52" height="60" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 6C4 3.8 5.8 2 8 2H34L50 18V54C50 56.2 48.2 58 46 58H8C5.8 58 4 56.2 4 54V6Z"
+                      fill="var(--surface-3)" stroke="var(--green)" stroke-width="1.4"/>
+                <path d="M34 2V15C34 16.7 35.3 18 37 18H50" fill="none" stroke="var(--green)" stroke-width="1.4" stroke-opacity="0.5"/>
+                <polyline points="15,32 22,40 37,22" fill="none" stroke="var(--green)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div class="upload-label" style="margin-bottom:1.35rem">
+                <strong style="color:var(--text)">${escHtml(file.name)}</strong><br>
+                <span style="color:var(--text-3);font-size:0.78rem;font-family:var(--mono)">${mb} MB</span>
+            </div>
+            <button class="btn primary" id="startBtn">Lancer le pipeline &rarr;</button>
+        `;
+        uploadZone.style.cursor = 'default';
+        document.getElementById('startBtn').addEventListener('click', e => { e.stopPropagation(); startProcessing(); });
+    }
+
+    // ── Start job ─────────────────────────────────────────
+    async function startProcessing() {
+        if (!pendingFile) return;
+        const btn = document.getElementById('startBtn');
+        if (btn) { btn.disabled = true; btn.textContent = 'Envoi en cours…'; }
+        const fd = new FormData();
+        fd.append('file', pendingFile);
+        fd.append('model', modelSelect.value);
+        fd.append('send_image', imageSelect.value);
+        fd.append('engine', engineSelect.value);
+        let data;
+        try {
+            const res = await fetch('/api/upload', { method: 'POST', body: fd });
+            data = await res.json();
+        } catch { showToast('❌ Erreur réseau'); if (btn) btn.disabled = false; return; }
+        if (data.error) { showToast('❌ ' + data.error); if (btn) btn.disabled = false; return; }
+        createJobCard(data.job_id, data.filename);
+        connectWebSocket(data.job_id);
+        resetUploadZone();
+    }
+
+    // ── Reset upload zone ─────────────────────────────────
+    function resetUploadZone() {
+        pendingFile = null;
+        settingsPanel.classList.remove('visible');
+        uploadZone.style.cursor = 'pointer';
+        uploadZone.innerHTML = `
+            <svg class="doc-icon" width="52" height="60" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 6C4 3.8 5.8 2 8 2H34L50 18V54C50 56.2 48.2 58 46 58H8C5.8 58 4 56.2 4 54V6Z"
+                      fill="var(--surface-3)" stroke="var(--accent)" stroke-width="1.4" stroke-opacity="0.8"/>
+                <path d="M34 2V15C34 16.7 35.3 18 37 18H50" fill="none" stroke="var(--accent)" stroke-width="1.4" stroke-opacity="0.5"/>
+                <line x1="13" y1="25" x2="41" y2="25" stroke="var(--accent)" stroke-width="1.1" stroke-opacity="0.18"/>
+                <text x="13" y="35" fill="var(--accent)" font-size="7.5" opacity="0.5" font-family="Georgia, serif">&#x222B; f(x) dx = F(x)</text>
+                <line x1="13" y1="42" x2="36" y2="42" stroke="var(--accent)" stroke-width="1" stroke-opacity="0.12"/>
+                <line x1="13" y1="48" x2="28" y2="48" stroke="var(--accent)" stroke-width="1" stroke-opacity="0.08"/>
+            </svg>
+            <div class="upload-label">Déposez votre <strong>PDF</strong> ici — ou cliquez pour parcourir</div>
+            <div class="upload-hint">PDF · scan, manuscrit, STEM</div>
+            <input type="file" id="fileInput" accept=".pdf" style="display:none">
+        `;
+        document.getElementById('fileInput').addEventListener('change', e => { if (e.target.files[0]) showSettings(e.target.files[0]); });
+    }
+
+    // ── Job card ──────────────────────────────────────────
+    function createJobCard(jobId, filename) {
+        const card = document.createElement('div');
+        card.className = 'job-card';
+        card.id = `job-${jobId}`;
+        card.innerHTML = `
+            <div class="job-header">
+                <span class="job-filename">${escHtml(filename)}</span>
+                <span class="job-status processing" id="status-${jobId}">
+                    <span class="status-dot"></span>Processing
+                </span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill active" id="fill-${jobId}"></div>
+            </div>
+            <div class="progress-meta">
+                <span id="counter-${jobId}">Démarrage…</span>
+                <span class="progress-stage" id="stage-${jobId}"></span>
+            </div>
+            <div class="log" id="log-${jobId}"></div>
+            <div class="actions" id="actions-${jobId}" style="display:none"></div>
+        `;
+        jobsContainer.prepend(card);
+    }
+
+    function updateProgress(jobId, page, total, stage) {
+        const pct = total > 0 ? Math.round(page / total * 100) : 8;
+        const fill    = document.getElementById(`fill-${jobId}`);
+        const counter = document.getElementById(`counter-${jobId}`);
+        const stageEl = document.getElementById(`stage-${jobId}`);
+        const log     = document.getElementById(`log-${jobId}`);
+        if (fill)    fill.style.width = `${pct}%`;
+        if (counter) counter.textContent = `${page} / ${total} pages`;
+        if (stageEl) stageEl.textContent = stage;
+        if (log) {
+            const prev = log.querySelector('.entry.latest');
+            if (prev) prev.classList.remove('latest');
+            const entry = document.createElement('div');
+            entry.className = 'entry latest';
+            entry.textContent = `[${page}/${total}] ${stage}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
         }
+    }
 
-        modelSelect.addEventListener('change', updateCostEstimate);
-        imageSelect.addEventListener('change', updateCostEstimate);
-        engineSelect.addEventListener('change', updateCostEstimate);
-
-        // ── Upload handling ──────────────────────────
-
-        uploadZone.addEventListener('click', (e) => {
-            // Only open file picker if no file is already selected (prevents Finder re-opening)
-            if (!pendingFile) fileInput.click();
-        });
-        uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
-        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
-        uploadZone.addEventListener('drop', e => {
-            e.preventDefault();
-            uploadZone.classList.remove('drag-over');
-            const file = e.dataTransfer.files[0];
-            if (file && file.name.endsWith('.pdf')) showSettings(file);
-        });
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files[0]) showSettings(fileInput.files[0]);
-        });
-
-        function showSettings(file) {
-            pendingFile = file;
-            settingsPanel.classList.add('visible');
-            updateCostEstimate();
-            // Replace upload zone content with file info + start button
-            uploadZone.innerHTML = `
-                <div class="icon">✅</div>
-                <div class="label"><strong>${file.name}</strong> — ${(file.size / 1024 / 1024).toFixed(1)} MB</div>
-                <button class="btn primary" id="startBtn" style="margin-top:1rem">Lancer le pipeline</button>
-            `;
-            uploadZone.style.cursor = 'default';
-            document.getElementById('startBtn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                startProcessing();
-            });
-        }
-
-        async function startProcessing() {
-            if (!pendingFile) return;
-            const btn = document.getElementById('startBtn');
-            if (btn) btn.disabled = true;
-
-            const formData = new FormData();
-            formData.append('file', pendingFile);
-            formData.append('model', modelSelect.value);
-            formData.append('send_image', imageSelect.value);
-            formData.append('engine', engineSelect.value);
-
-            const res = await fetch('/api/upload', { method: 'POST', body: formData });
-            const data = await res.json();
-
-            if (data.error) { alert(data.error); return; }
-
-            createJobCard(data.job_id, data.filename);
-            connectWebSocket(data.job_id);
-
-            // Reset upload zone
-            resetUploadZone();
-        }
-
-        function resetUploadZone() {
-            pendingFile = null;
-            settingsPanel.classList.remove('visible');
-            uploadZone.innerHTML = `
-                <div class="icon">📄</div>
-                <div class="label">Drop your <strong>PDF</strong> here — or click to browse</div>
-                <input type="file" id="fileInput" accept=".pdf">
-            `;
-            uploadZone.style.cursor = 'pointer';
-            document.getElementById('fileInput').addEventListener('change', () => {
-                const fi = document.getElementById('fileInput');
-                if (fi && fi.files[0]) showSettings(fi.files[0]);
-            });
-        }
-
-        // ── Job card UI ─────────────────────────────
-
-        function createJobCard(jobId, filename) {
-            const card = document.createElement('div');
-            card.className = 'job-card';
-            card.id = `job-${jobId}`;
-            card.innerHTML = `
-                <div class="job-header">
-                    <span class="job-filename">${filename}</span>
-                    <span class="job-status processing" id="status-${jobId}">Processing</span>
-                </div>
-                <div class="progress-wrap">
-                    <div class="progress-bar"><div class="progress-fill" id="fill-${jobId}"></div></div>
-                    <div class="progress-info">
-                        <span id="counter-${jobId}">Starting...</span>
-                        <span class="progress-stage" id="stage-${jobId}"></span>
-                    </div>
-                </div>
-                <div class="log" id="log-${jobId}"></div>
-                <div class="actions" id="actions-${jobId}" style="display:none">
-                    <a class="btn primary" id="dl-pdf-${jobId}" href="#">Télécharger PDF</a>
-                    <a class="btn" id="dl-tex-${jobId}" href="#">Télécharger .tex</a>
-                </div>
-            `;
-            jobsContainer.prepend(card);
-        }
-
-        function updateProgress(jobId, page, total, stage) {
-            const pct = total > 0 ? (page / total * 100) : 0;
-            const fill = document.getElementById(`fill-${jobId}`);
-            const counter = document.getElementById(`counter-${jobId}`);
-            const stageEl = document.getElementById(`stage-${jobId}`);
-            const log = document.getElementById(`log-${jobId}`);
-
-            if (fill) fill.style.width = `${pct}%`;
-            if (counter) counter.textContent = `${page} / ${total} pages`;
-            if (stageEl) stageEl.textContent = stage;
-            if (log) {
-                const entry = document.createElement('div');
-                entry.className = 'entry';
-                entry.textContent = `Page ${page}: ${stage}`;
-                log.appendChild(entry);
-                log.scrollTop = log.scrollHeight;
-            }
-        }
-
-        function markDone(jobId, hasPdf) {
-            const status = document.getElementById(`status-${jobId}`);
-            if (status) { status.textContent = 'Done'; status.className = 'job-status done'; }
-            const actions = document.getElementById(`actions-${jobId}`);
-            if (actions) actions.style.display = 'flex';
-            const dlPdf = document.getElementById(`dl-pdf-${jobId}`);
-            if (dlPdf) {
-                if (hasPdf) {
-                    dlPdf.href = `/api/jobs/${jobId}/download?fmt=pdf`;
-                } else {
-                    dlPdf.removeAttribute('href');
-                    dlPdf.classList.add('disabled');
-                    dlPdf.style.pointerEvents = 'none';
-                    dlPdf.title = 'Compilation LaTeX échouée — téléchargez le .tex';
-                    dlPdf.textContent = 'PDF (indisponible)';
-                }
-            }
-            const dlTex = document.getElementById(`dl-tex-${jobId}`);
-            if (dlTex) dlTex.href = `/api/jobs/${jobId}/download?fmt=tex`;
-            if (!hasPdf) {
+    function markDone(jobId, hasPdf) {
+        const card    = document.getElementById(`job-${jobId}`);
+        const status  = document.getElementById(`status-${jobId}`);
+        const fill    = document.getElementById(`fill-${jobId}`);
+        const actions = document.getElementById(`actions-${jobId}`);
+        if (card)   card.classList.add('is-done');
+        if (status) { status.innerHTML = '<span class="status-dot"></span>Done'; status.className = 'job-status done'; }
+        if (fill)   { fill.style.width = '100%'; fill.classList.remove('active'); fill.style.background = 'var(--green)'; }
+        if (actions) {
+            actions.style.display = 'flex';
+            if (hasPdf) {
+                actions.innerHTML = `
+                    <a class="btn primary" href="/api/jobs/${jobId}/download?fmt=pdf">&darr; Télécharger PDF</a>
+                    <a class="btn" href="/api/jobs/${jobId}/download?fmt=tex">&darr; .tex</a>
+                `;
+            } else {
+                actions.innerHTML = `<a class="btn" href="/api/jobs/${jobId}/download?fmt=tex">&darr; Télécharger .tex</a>`;
                 const log = document.getElementById(`log-${jobId}`);
                 if (log) {
-                    const warn = document.createElement('div');
-                    warn.className = 'error-msg';
-                    warn.textContent = '⚠ PDF non généré (erreur de compilation LaTeX). Téléchargez le .tex et compilez sur Overleaf.';
-                    log.appendChild(warn);
+                    const w = document.createElement('div');
+                    w.className = 'entry log-error';
+                    w.textContent = '⚠ PDF non généré — compilez le .tex sur Overleaf';
+                    log.appendChild(w); log.scrollTop = log.scrollHeight;
                 }
             }
         }
+    }
 
-        function markError(jobId, message) {
-            const status = document.getElementById(`status-${jobId}`);
-            if (status) { status.textContent = 'Error'; status.className = 'job-status error'; }
-            const log = document.getElementById(`log-${jobId}`);
-            if (log) {
-                const entry = document.createElement('div');
-                entry.className = 'error-msg';
-                entry.textContent = message;
-                log.appendChild(entry);
+    function markError(jobId, message) {
+        const card   = document.getElementById(`job-${jobId}`);
+        const status = document.getElementById(`status-${jobId}`);
+        const fill   = document.getElementById(`fill-${jobId}`);
+        if (card)   card.classList.add('is-error');
+        if (status) { status.innerHTML = '<span class="status-dot"></span>Erreur'; status.className = 'job-status error'; }
+        if (fill)   fill.classList.remove('active');
+        const log = document.getElementById(`log-${jobId}`);
+        if (log) {
+            const e = document.createElement('div');
+            e.className = 'entry log-error';
+            e.textContent = message;
+            log.appendChild(e); log.scrollTop = log.scrollHeight;
+        }
+    }
+
+    // ── WebSocket ─────────────────────────────────────────
+    function connectWebSocket(jobId) {
+        const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const ws = new WebSocket(`${proto}//${location.host}/ws/${jobId}`);
+        ws.onmessage = ({ data }) => {
+            const d = JSON.parse(data);
+            if      (d.type === 'progress') updateProgress(jobId, d.page, d.total, d.stage);
+            else if (d.type === 'done')     { markDone(jobId, d.has_pdf !== false); ws.close(); }
+            else if (d.type === 'error')    { markError(jobId, d.message); ws.close(); }
+            else if (d.type === 'status') {
+                if      (d.status === 'done')  markDone(jobId, d.has_pdf !== false);
+                else if (d.status === 'error') markError(jobId, d.error);
+                else if (d.progress)           updateProgress(jobId, d.progress, d.total, d.stage);
             }
+        };
+        ws.onerror = () => markError(jobId, 'Connexion WebSocket perdue');
+    }
+
+    // ── Toast ─────────────────────────────────────────────
+    let _toastTimer;
+    function showToast(msg, ms = 3200) {
+        toastEl.textContent = msg;
+        toastEl.classList.add('show');
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms);
+    }
+
+    // ── XSS guard ─────────────────────────────────────────
+    function escHtml(s) {
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ════════════════════════════════════════════
+    //  EASTER EGGS
+    // ════════════════════════════════════════════
+
+    // 1. Logo click ×5 → console poem
+    let _lc = 0, _lt;
+    logoEl.addEventListener('click', () => {
+        _lc++;
+        clearTimeout(_lt);
+        _lt = setTimeout(() => { _lc = 0; }, 2200);
+        if (_lc >= 5) {
+            _lc = 0;
+            console.log(
+                '%c\n  \\documentclass[secret]{palimpsest}\n  \\begin{poem}\n    Ici, sous chaque glyphe,\n    gît l\'encre d\'un autre texte.\n    Tu lis le présent —\n    mais le passé saigne à travers.\n  \\end{poem}\n',
+                'color:#6c8cff;font-family:monospace;font-size:11px;line-height:1.7'
+            );
+            showToast('📜 Regarde dans la console…', 4000);
         }
+    });
 
-        // ── WebSocket ───────────────────────────────
-
-        function connectWebSocket(jobId) {
-            const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const ws = new WebSocket(`${protocol}//${location.host}/ws/${jobId}`);
-
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                switch (data.type) {
-                    case 'progress':
-                        updateProgress(jobId, data.page, data.total, data.stage);
-                        break;
-                    case 'done':
-                        markDone(jobId, data.has_pdf !== false);
-                        ws.close();
-                        break;
-                    case 'error':
-                        markError(jobId, data.message);
-                        ws.close();
-                        break;
-                    case 'status':
-                        if (data.status === 'done') markDone(jobId, data.has_pdf !== false);
-                        else if (data.status === 'error') markError(jobId, data.error);
-                        else if (data.progress) updateProgress(jobId, data.progress, data.total, data.stage);
-                        break;
-                }
-            };
-
-            ws.onerror = () => markError(jobId, 'WebSocket connection lost');
+    // 2. Konami code → Mode Parchemin
+    const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+    let _ki = 0, _pn = false;
+    document.addEventListener('keydown', e => {
+        _ki = e.key === KONAMI[_ki] ? _ki + 1 : (e.key === KONAMI[0] ? 1 : 0);
+        if (_ki === KONAMI.length) {
+            _ki = 0; _pn = !_pn;
+            document.documentElement.setAttribute('data-mode', _pn ? 'parchemin' : 'dark');
+            document.querySelector('meta[name="theme-color"]').content = _pn ? '#f0e6cc' : '#080810';
+            showToast(_pn ? '📜 Mode Parchemin activé' : '💻 Mode sombre rétabli', 4000);
         }
+    });
+
     </script>
 </body>
 </html>
