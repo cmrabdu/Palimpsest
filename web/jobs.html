@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<!--
+  \documentclass[historique]{palimpsest}
+  % Les fantômes de vos anciens documents vivent ici.
+-->
+<html lang="fr" data-mode="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique — Palimpsest</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+        --bg:         #07070e;
+        --surface:    #0f0f1a;
+        --surface-2:  #161624;
+        --surface-3:  #1e1e30;
+        --border:     #22223a;
+        --border-hi:  #323255;
+        --text:       #ddddef;
+        --text-2:     #7070a0;
+        --text-3:     #40406a;
+        --accent:     #6c8cff;
+        --accent-dim: #4a68e0;
+        --accent-lo:  #6c8cff18;
+        --green:      #4ade80;
+        --red:        #f87171;
+        --orange:     #fb923c;
+        --r:          14px;
+        --r-sm:       8px;
+        --font:       'Inter', -apple-system, system-ui, sans-serif;
+        --mono:       'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    html[data-mode="parchemin"] {
+        --bg:     #f0e6cc;
+        --surface: #e7dab8;
+        --surface-2: #dccfa6;
+        --border: #b09060;
+        --text:   #1c1005;
+        --text-2: #5a3818;
+        --accent: #8b3a0a;
+    }
+
+    html { color-scheme: dark; }
+    html[data-mode="parchemin"] { color-scheme: light; }
+
+    body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 2rem 1.5rem;
+    }
+
+    body::before {
+        content: '';
+        position: fixed; inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23g)'/%3E%3C/svg%3E");
+        opacity: 0.028;
+        pointer-events: none;
+        z-index: 9999;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: -0.045em;
+    }
+
+    .header a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.5rem 1.1rem;
+        border-radius: var(--r-sm);
+        border: 1px solid var(--border-hi);
+        background: var(--surface-2);
+        color: var(--text);
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        transition: border-color 0.12s, color 0.12s, background 0.12s;
+    }
+
+    .header a:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--accent-lo);
+    }
+
+    .controls {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .controls select, .controls input {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-sm);
+        padding: 0.5rem 0.8rem;
+        color: var(--text);
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        cursor: pointer;
+        transition: border-color 0.12s;
+    }
+
+    .controls select:focus, .controls input:focus {
+        outline: none;
+        border-color: var(--accent);
+    }
+
+    .status-badge {
+        display: inline-block;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        padding: 0.25rem 0.65rem;
+        border-radius: 100px;
+        white-space: nowrap;
+    }
+
+    .status-badge.done { background: #4ade8015; color: var(--green); }
+    .status-badge.processing { background: var(--accent-lo); color: var(--accent); }
+    .status-badge.queued { background: #f3a93215; color: var(--orange); }
+    .status-badge.error { background: #f8717115; color: var(--red); }
+
+    .jobs-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    .job-row {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 1.2rem;
+        display: grid;
+        grid-template-columns: 1fr auto auto auto;
+        gap: 1rem;
+        align-items: center;
+        transition: border-color 0.2s, background 0.2s;
+    }
+
+    .job-row:hover {
+        border-color: var(--border-hi);
+        background: var(--surface-2);
+    }
+
+    .job-row.error {
+        border-color: #f8717128;
+    }
+
+    .job-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        min-width: 0;
+    }
+
+    .job-name {
+        font-family: var(--mono);
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .job-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.75rem;
+        color: var(--text-3);
+        flex-wrap: wrap;
+    }
+
+    .job-meta-item {
+        display: flex;
+        gap: 0.3rem;
+    }
+
+    .job-meta-label {
+        color: var(--text-3);
+        opacity: 0.6;
+    }
+
+    .job-meta-value {
+        color: var(--text-2);
+        font-family: var(--mono);
+    }
+
+    .job-time {
+        text-align: right;
+        font-size: 0.8rem;
+        color: var(--text-3);
+        white-space: nowrap;
+    }
+
+    .job-time .date {
+        display: block;
+        font-size: 0.75rem;
+    }
+
+    .job-status {
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .job-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.4rem 0.9rem;
+        border-radius: var(--r-sm);
+        border: 1px solid var(--border-hi);
+        background: var(--surface-3);
+        color: var(--text);
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        transition: border-color 0.12s, color 0.12s, background 0.12s;
+        font-family: var(--mono);
+        white-space: nowrap;
+    }
+
+    .btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--accent-lo);
+    }
+
+    .btn.disabled, .btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--text-3);
+    }
+
+    .empty-state p {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-sm);
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--accent);
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--text-3);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-top: 0.4rem;
+    }
+
+    @media (max-width: 768px) {
+        .job-row {
+            grid-template-columns: 1fr;
+        }
+        .job-time, .job-actions {
+            grid-column: 1;
+        }
+        .header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>Historique</h1>
+                <p style="color: var(--text-2); font-size: 0.9rem; margin-top: 0.3rem;">Tous vos documents traités</p>
+            </div>
+            <a href="/">← Retour</a>
+        </div>
+
+        <div class="stats" id="stats"></div>
+
+        <div class="controls">
+            <select id="statusFilter">
+                <option value="">Tous les statuts</option>
+                <option value="done">Terminé ✓</option>
+                <option value="processing">En cours</option>
+                <option value="queued">En attente</option>
+                <option value="error">Erreur ✗</option>
+            </select>
+            <input type="search" id="searchInput" placeholder="Chercher par nom de fichier…">
+            <button onclick="location.reload()" style="border:1px solid var(--border-hi); background: var(--surface-2); color: var(--text); padding: 0.5rem 1rem; border-radius: var(--r-sm); cursor: pointer; font-family: var(--mono); font-size: 0.8rem;">⟲ Actualiser</button>
+        </div>
+
+        <div class="jobs-list" id="jobsList"></div>
+    </div>
+
+    <script>
+    'use strict';
+
+    const statusFilter = document.getElementById('statusFilter');
+    const searchInput = document.getElementById('searchInput');
+    const jobsList = document.getElementById('jobsList');
+    const statsDiv = document.getElementById('stats');
+    let allJobs = [];
+
+    async function loadJobs() {
+        try {
+            const res = await fetch('/api/jobs/list?limit=200');
+            const data = await res.json();
+            allJobs = data.jobs || [];
+            renderStats();
+            renderJobs();
+        } catch (e) {
+            jobsList.innerHTML = '<p style="color: var(--red);">❌ Erreur de chargement: ' + e.message + '</p>';
+        }
+    }
+
+    function renderStats() {
+        const total = allJobs.length;
+        const done = allJobs.filter(j => j.status === 'done').length;
+        const errors = allJobs.filter(j => j.status === 'error').length;
+        const processing = allJobs.filter(j => j.status === 'processing' || j.status === 'queued').length;
+
+        statsDiv.innerHTML = `
+            <div class="stat-card">
+                <div class="stat-value">${total}</div>
+                <div class="stat-label">Total</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #4ade80;">${done}</div>
+                <div class="stat-label">Réussis</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #fb923c;">${processing}</div>
+                <div class="stat-label">Actifs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #f87171;">${errors}</div>
+                <div class="stat-label">Erreurs</div>
+            </div>
+        `;
+    }
+
+    function renderJobs() {
+        let filtered = allJobs;
+        const statusVal = statusFilter.value;
+        const searchVal = searchInput.value.toLowerCase();
+
+        if (statusVal) {
+            filtered = filtered.filter(j => j.status === statusVal);
+        }
+        if (searchVal) {
+            filtered = filtered.filter(j => j.filename.toLowerCase().includes(searchVal));
+        }
+
+        if (filtered.length === 0) {
+            jobsList.innerHTML = '<div class="empty-state"><p>Aucun document trouvé.</p></div>';
+            return;
+        }
+
+        jobsList.innerHTML = filtered.map(job => `
+            <div class="job-row ${job.status === 'error' ? 'error' : ''}">
+                <div class="job-info">
+                    <div class="job-name" title="${escHtml(job.filename)}">${escHtml(job.filename)}</div>
+                    <div class="job-meta">
+                        <div class="job-meta-item">
+                            <span class="job-meta-label">ID:</span>
+                            <span class="job-meta-value">${job.job_id}</span>
+                        </div>
+                        <div class="job-meta-item">
+                            <span class="job-meta-label">Modèle:</span>
+                            <span class="job-meta-value">${job.model}</span>
+                        </div>
+                        <div class="job-meta-item">
+                            <span class="job-meta-label">OCR:</span>
+                            <span class="job-meta-value">${job.engine}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="job-time">
+                    <span>${formatDate(job.timestamp)}</span>
+                    <div class="date">${formatTime(job.timestamp)}</div>
+                </div>
+                <div class="job-status">
+                    <span class="status-badge ${job.status}">${statusLabel(job.status)}</span>
+                </div>
+                <div class="job-actions">
+                    ${job.status === 'done' && job.output_path ? `
+                        <a class="btn" href="/api/jobs/${job.job_id}/download?fmt=pdf" title="Télécharger le PDF">PDF</a>
+                        <a class="btn" href="/api/jobs/${job.job_id}/download?fmt=tex">LaTeX</a>
+                    ` : ''}
+                    ${job.status === 'error' ? `<span class="btn disabled" title="${escHtml(job.error)}">${job.error.substring(0, 30)}…</span>` : ''}
+                    ${job.status !== 'done' && job.status !== 'error' ? `<span class="btn disabled">Traitement…</span>` : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function formatDate(isoStr) {
+        if (!isoStr) return '—';
+        const d = new Date(isoStr);
+        return d.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' });
+    }
+
+    function formatTime(isoStr) {
+        if (!isoStr) return '';
+        const d = new Date(isoStr);
+        return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function statusLabel(status) {
+        const labels = {
+            done: 'Terminé ✓',
+            processing: 'En cours',
+            queued: 'En attente',
+            error: 'Erreur ✗'
+        };
+        return labels[status] || status;
+    }
+
+    function escHtml(s) {
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    statusFilter.addEventListener('change', renderJobs);
+    searchInput.addEventListener('input', renderJobs);
+
+    // Load on init
+    loadJobs();
+    // Refresh every 10s for active jobs
+    setInterval(loadJobs, 10000);
+
+    // Konami code for parchemin mode
+    const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+    let _ki = 0, _pn = false;
+    document.addEventListener('keydown', e => {
+        _ki = e.key === KONAMI[_ki] ? _ki + 1 : (e.key === KONAMI[0] ? 1 : 0);
+        if (_ki === KONAMI.length) {
+            _ki = 0; _pn = !_pn;
+            document.documentElement.setAttribute('data-mode', _pn ? 'parchemin' : 'dark');
+            document.querySelector('meta[name="theme-color"]').content = _pn ? '#f0e6cc' : '#080810';
+        }
+    });
+    </script>
+</body>
+</html>

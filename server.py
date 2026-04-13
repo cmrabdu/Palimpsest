@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 import uuid
+from datetime import datetime
 from pathlib import Path
 
 import yaml
@@ -22,8 +23,36 @@ app = FastAPI(title="Palimpsest", version="0.1.0")
 
 # ── State ────────────────────────────────────────────────
 
-jobs: dict[str, dict] = {}  # job_id -> {status, progress, total, stage, output_path, error}
+jobs: dict[str, dict] = {}  # job_id -> {status, progress, total, stage, output_path, error, timestamp}
 websockets: dict[str, list[WebSocket]] = {}  # job_id -> connected websockets
+JOBS_DB_PATH = BASE_DIR / ".cache/jobs_history.json"
+
+
+def _load_jobs_db():
+    """Load jobs history from disk."""
+    if JOBS_DB_PATH.exists():
+        try:
+            with open(JOBS_DB_PATH) as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error(f"Failed to load jobs DB: {e}")
+    return {}
+
+
+def _save_job_to_db(job_id: str, job_data: dict):
+    """Persist a job record to disk."""
+    JOBS_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    history = _load_jobs_db()
+    history[job_id] = job_data
+    try:
+        with open(JOBS_DB_PATH, 'w') as f:
+            json.dump(history, f, indent=2)
+    except Exception as e:
+        logger.error(f"Failed to save job {job_id}: {e}")
+
+
+# Load jobs from history on startup
+jobs = _load_jobs_db()
 
 
 async def broadcast(job_id: str, data: dict):
@@ -69,6 +98,7 @@ async def upload_pdf(
     pdf_path.write_bytes(content)
 
     jobs[job_id] = {
+        "job_id": job_id,
         "status": "queued",
         "filename": safe_name,
         "model": model,
@@ -79,7 +109,9 @@ async def upload_pdf(
         "stage": "queued",
         "output_path": None,
         "error": None,
+        "timestamp": datetime.utcnow().isoformat() + "Z",
     }
+    _save_job_to_db(job_id, jobs[job_id])
 
     # Start processing in background
     asyncio.create_task(_process_job(job_id, str(pdf_path), model, send_image == "true", engine))
@@ -123,11 +155,13 @@ async def _process_job(job_id: str, pdf_path: str, model: str = "o4-mini", send_
         jobs[job_id]["status"] = "done"
         jobs[job_id]["output_path"] = str(output)
         jobs[job_id]["has_pdf"] = output.suffix == ".pdf"
+        _save_job_to_db(job_id, jobs[job_id])
         await broadcast(job_id, {"type": "done", "output": str(output), "has_pdf": output.suffix == ".pdf"})
     except Exception as e:
         logger.exception(f"Job {job_id} failed")
         jobs[job_id]["status"] = "error"
         jobs[job_id]["error"] = str(e)
+        _save_job_to_db(job_id, jobs[job_id])
         await broadcast(job_id, {"type": "error", "message": str(e)})
 
 
@@ -175,6 +209,30 @@ async def download_result(job_id: str, fmt: str = "auto"):
     if tex_path.exists():
         return FileResponse(tex_path, filename=tex_path.name, media_type="application/x-tex")
     return {"error": "Output file not found."}
+
+
+@app.get("/api/jobs/list")
+async def list_jobs(limit: int = 50, status: str = None):
+    """List all jobs sorted by timestamp (newest first)."""
+    job_list = sorted(
+        jobs.values(),
+        key=lambda x: x.get("timestamp", ""),
+        reverse=True
+    )
+    if status:
+        job_list = [j for j in job_list if j.get("status") == status]
+    if limit:
+        job_list = job_list[:limit]
+    return {"jobs": job_list, "total": len(job_list)}
+
+
+@app.get("/api/jobs/latest")
+async def latest_job():
+    """Get the most recent job (by timestamp)."""
+    if not jobs:
+        return {"error": "No jobs found."}
+    latest = max(jobs.values(), key=lambda x: x.get("timestamp", ""))
+    return latest
 
 
 @app.websocket("/ws/{job_id}")

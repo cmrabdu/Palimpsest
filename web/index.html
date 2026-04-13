@@ -109,7 +109,10 @@
 
     /* ── HEADER ─────────────────────── */
     .header {
-        text-align: center;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 2rem;
         margin-bottom: 2.75rem;
         animation: slideUp 0.65s cubic-bezier(0.16,1,0.3,1) both;
     }
@@ -439,6 +442,13 @@
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    @media (max-width: 768px) {
+        .header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
     </style>
 </head>
 <body>
@@ -446,13 +456,16 @@
     <div class="container">
 
         <header class="header">
-            <div class="logo" id="logo" title="Cliquez 5× pour une surprise">
-                <span class="logo-slashes">//</span>
-                <span class="logo-name">Palimpsest</span>
+            <div>
+                <div class="logo" id="logo" title="Cliquez 5× pour une surprise">
+                    <span class="logo-slashes">//</span>
+                    <span class="logo-name">Palimpsest</span>
+                </div>
+                <p class="header-tagline">
+                    <em>scan</em> → ocr → llm → <em>LaTeX</em>
+                </p>
             </div>
-            <p class="header-tagline">
-                <em>scan</em> → ocr → llm → <em>LaTeX</em>
-            </p>
+            <a href="/jobs.html" class="btn" style="height: fit-content;">Historique →</a>
         </header>
 
         <div class="upload-zone" id="uploadZone">
