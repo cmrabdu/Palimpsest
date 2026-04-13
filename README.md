@@ -48,9 +48,11 @@ This is a **free, open-source tool made by a student, for students.** No profit,
 - **Inter-page memory** — variables and notation defined on page 3 are remembered on page 50
 - **Fault-tolerant** — page-by-page caching; resume interrupted runs from where they stopped
 - **Web interface** — drag & drop a PDF, watch real-time progress, download the result
+- **Job history** — all jobs are persisted to disk; retrieve previous documents even after a page refresh
 - **Multi-model** — supports 8 models across OpenAI and Anthropic (o4-mini is the sweet spot)
 - **No Mathpix needed** — vision-direct mode lets the LLM do OCR straight from images (free, no signup)
 - **Optional Mathpix** — for maximum formula accuracy on particularly rough scans
+- **Overleaf compatible** — output `.tex` uses `iftex` conditional: compiles with both xelatex and pdflatex
 
 ---
 
@@ -104,6 +106,11 @@ python server.py
 
 Drop your PDF, pick a model, hit Start. Watch page-by-page progress in real time. Download the compiled PDF when done.
 
+- **`/`** — Upload a PDF and track real-time processing
+- **`/jobs.html`** — History of all processed documents (with download links)
+
+
+
 #### Command line
 
 ```bash
@@ -140,6 +147,8 @@ Palimpsest/
 ├── requirements.txt         # Python dependencies
 ├── VERSION                  # Semver version file
 ├── CHANGELOG.md             # Release history
+├── Dockerfile               # Container build (includes texlive-science)
+├── docker-compose.yml       # Service configuration
 ├── src/
 │   ├── extract.py           # PDF → images (pdf2image + poppler)
 │   ├── preprocess.py        # OpenCV: binarize, deskew, denoise
@@ -148,8 +157,12 @@ Palimpsest/
 │   ├── context.py           # Inter-page context accumulator
 │   ├── merge.py             # LaTeX document assembly
 │   └── export.py            # xelatex PDF compilation
-└── web/
-    └── index.html           # Single-page web UI
+├── web/
+│   ├── index.html           # Main upload & progress UI
+│   ├── jobs.html            # Job history & download page
+│   └── favicon.svg          # App icon
+└── .cache/
+    └── jobs_history.json    # Persistent job records (auto-created)
 ```
 
 ### Supported Models
@@ -202,9 +215,11 @@ See [`config.example.yaml`](config.example.yaml) for all options.
 - [ ] Batch API support for lower cost on large documents
 - [ ] Smart model routing (fast model for simple pages, powerful model for complex ones)
 - [ ] Improved TikZ generation for mechanical diagrams
-- [ ] GitHub Actions CI/CD for self-hosted deployment
+- [x] GitHub Actions CI/CD for self-hosted deployment
 - [ ] Multi-language support (currently optimized for French STEM)
 - [ ] Better error recovery for LaTeX compilation failures
+- [ ] Persistent job storage with database backend (currently JSON flat file)
+- [ ] Authentication for the hosted instance
 
 ---
 
@@ -223,5 +238,7 @@ This is a student project and contributions are welcome! If you're also stuck wi
 **Built for students, by a student.**
 
 *Because knowledge trapped in image PDFs helps no one.*
+
+Made with ❤️ by [Abdullah Camur](https://cmrabdu.com) · [@cmrabdu](https://github.com/cmrabdu)
 
 </div>
