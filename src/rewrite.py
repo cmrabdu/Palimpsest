@@ -71,33 +71,20 @@ TABLEAUX — RÈGLES STRICTES :
 - INTERDICTION ABSOLUE : aucun \\begin{tikzpicture} dans une cellule de tableau, même pour un symbole simple. Décrire en texte (ex : « cercle avec axe vertical »).
 - INTERDICTION ABSOLUE : aucun \\begin{tabular} imbriqué dans une cellule de tabularx. Écrire le texte directement dans la cellule.
 
-FIGURES ET SCHÉMAS — PRINCIPE : DESSINER D'ABORD, encadrer seulement si nécessaire.
+FIGURES ET SCHÉMAS — PRINCIPE : TOUJOURS fbox, JAMAIS TikZ.
 - Ne placer une figure QUE si elle est visuellement présente sur la page actuelle. Si le texte mentionne « la figure 3.2 » sans que cette figure soit visible sur l'image, conserver uniquement \\ref{fig:3-2} — NE PAS créer d'environnement figure.
+- INTERDICTION ABSOLUE de générer du code \\begin{tikzpicture}. Toute figure, quelle que soit sa simplicité, utilise le format fbox ci-dessous.
 
-TOUJOURS TikZ (reconnaître ces patterns et dessiner) :
-- Vecteur / flèche de force sur fond neutre (ex : fil avec tension, réaction normale)
-- Formes simples avec points nommés : cercle + 2 points, segment + extrémités, rectangle + label
-- Schéma de liaison simple 2D : pivot (cercle + tige), glissière (guide + tige), appui plan (ligne + triangle)
-- Bilan des efforts (≤ 4 forces) : corps simple + vecteurs colorés ; forces actives \\draw[blue,->,thick], réactions \\draw[red,->,thick], chaque force avec node{$\\vec{F}$}
-
-TOUJOURS fbox (ne jamais tenter TikZ) :
-- Mécanisme articulé avec plusieurs corps mobiles (compas, bielle-manivelle, leviers multiples)
-- Hachures de matière (\\pattern) ou remplissages complexes
-- Vue 3D ou en perspective
-- Schéma avec cotes chiffrées ou dimensions
-- Bilan des efforts avec plus de 4 forces
-- Tout ce qui nécessite un paquet TikZ non chargé
-
-Format TikZ :
+Format fbox — UNIQUE format autorisé pour toute figure :
 \\begin{figure}[H]\\centering
-\\begin{tikzpicture}[scale=1]...\\end{tikzpicture}
+\\fbox{\\parbox{0.85\\textwidth}{\\textbf{[Figure N.M — À insérer]} \\\\ \\smallskip
+\\textit{Description (2-3 lignes max) : type de schéma, éléments principaux, labels importants, direction des forces/flèches si applicable.}}}
 \\caption{...}\\label{fig:N-M}\\end{figure}
 
-Format fbox :
-\\begin{figure}[H]\\centering
-\\fbox{\\parbox{0.9\\textwidth}{\\textit{\\textbf{Figure N.M :} Description exhaustive : tous les éléments visibles, positions relatives, labels, flèches, directions, légende.}}}
-\\caption{...}\\label{fig:N-M}\\end{figure}
-
+Règle de description :
+- 2-3 lignes max, en français
+- Nommer les éléments clés visibles : corps, points nommés, forces et leur direction, liaisons
+- Exemple acceptable : « Solide AB en équilibre sur deux appuis. Force $\\vec{P}$ vers le bas appliquée en A. Réaction $\\vec{R_B}$ verticale en B, réaction $\\vec{R_A}$ perpendiculaire à la surface en A. »
 - NE JAMAIS écrire « Figure 3.2 — ... » comme texte brut. Toute figure visible DOIT être dans un environnement figure.
 
 LABELS ET RÉFÉRENCES — CONVENTION STRICTE :
@@ -221,33 +208,20 @@ TABLEAUX — RÈGLES STRICTES :
 - INTERDICTION ABSOLUE : aucun \\begin{tikzpicture} dans une cellule de tableau, même pour un symbole simple. Décrire en texte (ex : « cercle avec axe vertical »).
 - INTERDICTION ABSOLUE : aucun \\begin{tabular} imbriqué dans une cellule de tabularx. Écrire le texte directement dans la cellule.
 
-FIGURES ET SCHÉMAS — PRINCIPE : DESSINER D'ABORD, encadrer seulement si nécessaire.
+FIGURES ET SCHÉMAS — PRINCIPE : TOUJOURS fbox, JAMAIS TikZ.
 - Ne placer une figure QUE si elle est visuellement présente sur la page actuelle. Si le texte mentionne « la figure 3.2 » sans que cette figure soit visible sur l'image, conserver uniquement \\ref{fig:3-2} — NE PAS créer d'environnement figure.
+- INTERDICTION ABSOLUE de générer du code \\begin{tikzpicture}. Toute figure, quelle que soit sa simplicité, utilise le format fbox ci-dessous.
 
-TOUJOURS TikZ (reconnaître ces patterns et dessiner) :
-- Vecteur / flèche de force sur fond neutre (ex : fil avec tension, réaction normale)
-- Formes simples avec points nommés : cercle + 2 points, segment + extrémités, rectangle + label
-- Schéma de liaison simple 2D : pivot (cercle + tige), glissière (guide + tige), appui plan (ligne + triangle)
-- Bilan des efforts (≤ 4 forces) : corps simple + vecteurs colorés ; forces actives \\draw[blue,->,thick], réactions \\draw[red,->,thick], chaque force avec node{$\\vec{F}$}
-
-TOUJOURS fbox (ne jamais tenter TikZ) :
-- Mécanisme articulé avec plusieurs corps mobiles (compas, bielle-manivelle, leviers multiples)
-- Hachures de matière (\\pattern) ou remplissages complexes
-- Vue 3D ou en perspective
-- Schéma avec cotes chiffrées ou dimensions
-- Bilan des efforts avec plus de 4 forces
-- Tout ce qui nécessite un paquet TikZ non chargé
-
-Format TikZ :
+Format fbox — UNIQUE format autorisé pour toute figure :
 \\begin{figure}[H]\\centering
-\\begin{tikzpicture}[scale=1]...\\end{tikzpicture}
+\\fbox{\\parbox{0.85\\textwidth}{\\textbf{[Figure N.M — À insérer]} \\\\ \\smallskip
+\\textit{Description (2-3 lignes max) : type de schéma, éléments principaux, labels importants, direction des forces/flèches si applicable.}}}
 \\caption{...}\\label{fig:N-M}\\end{figure}
 
-Format fbox :
-\\begin{figure}[H]\\centering
-\\fbox{\\parbox{0.9\\textwidth}{\\textit{\\textbf{Figure N.M :} Description exhaustive : tous les éléments visibles, positions relatives, labels, flèches, directions, légende.}}}
-\\caption{...}\\label{fig:N-M}\\end{figure}
-
+Règle de description :
+- 2-3 lignes max, en français
+- Nommer les éléments clés visibles : corps, points nommés, forces et leur direction, liaisons
+- Exemple acceptable : « Solide AB en équilibre sur deux appuis. Force $\\vec{P}$ vers le bas appliquée en A. Réaction $\\vec{R_B}$ verticale en B, réaction $\\vec{R_A}$ perpendiculaire à la surface en A. »
 - NE JAMAIS écrire « Figure 3.2 — ... » comme texte brut. Toute figure visible DOIT être dans un environnement figure.
 
 LABELS ET RÉFÉRENCES — CONVENTION STRICTE :
