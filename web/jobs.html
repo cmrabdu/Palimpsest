@@ -310,6 +310,28 @@
         margin-top: 0.4rem;
     }
 
+    /* ── FOOTER ─────────────────────── */
+    footer {
+        margin-top: 4rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border);
+        text-align: center;
+        font-size: 0.75rem;
+        color: var(--text-3);
+    }
+    footer a {
+        color: var(--accent);
+        text-decoration: none;
+        transition: color 0.12s;
+    }
+    footer a:hover { color: var(--accent-dim); text-decoration: underline; }
+    .footer-line { margin: 0.4rem 0; }
+    .footer-heart { display: inline-block; animation: heartbeat 1.2s ease-in-out infinite; }
+    @keyframes heartbeat {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.15); }
+    }
+
     @media (max-width: 768px) {
         .job-row {
             grid-template-columns: 1fr;
@@ -350,6 +372,18 @@
         </div>
 
         <div class="jobs-list" id="jobsList"></div>
+
+        <footer>
+            <div class="footer-line">
+                Made with <span class="footer-heart">❤️</span> by <a href="https://cmrabdu.com" target="_blank">@cmrabdu</a>
+            </div>
+            <div class="footer-line">
+                <a href="https://github.com/cmrabdu/Palimpsest" target="_blank">★ Open Source on GitHub</a>
+            </div>
+            <div class="footer-line">
+                <a href="https://cmrabdu.com" target="_blank">cmrabdu.com</a>
+            </div>
+        </footer>
     </div>
 
     <script>
