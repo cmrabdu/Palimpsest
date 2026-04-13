@@ -17,6 +17,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"><\/script>
     <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -592,6 +593,16 @@
     };
 
     let pendingFile = null;
+    let pendingPageCount = null;
+
+    // ── PDF.js worker ─────────────────────────────────────
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    async function readPdfPageCount(file) {
+        const buf = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+        return pdf.numPages;
+    }
 
     // ── Cost estimate ─────────────────────────────────────
     function updateCostEstimate() {
@@ -600,9 +611,13 @@
         if (!info) return;
         const sendImg = imageSelect.value === 'true';
         const engine  = engineSelect.value;
-        const pages   = Math.max(1, Math.round(pendingFile.size / 400_000));
-        const cost    = (pages * ((sendImg ? info.w : info.n) + (engine === 'mathpix' ? 0.005 : 0))).toFixed(2);
-        costValue.textContent = `~${pages}p · ${engine === 'vision' ? 'vision' : 'Mathpix'} · ~$${cost}`;
+        if (pendingPageCount === null) {
+            costValue.textContent = '…';
+            return;
+        }
+        const pages = pendingPageCount;
+        const cost  = (pages * ((sendImg ? info.w : info.n) + (engine === 'mathpix' ? 0.005 : 0))).toFixed(2);
+        costValue.textContent = `${pages}p · ${engine === 'vision' ? 'vision' : 'Mathpix'} · ~$${cost}`;
     }
 
     modelSelect.addEventListener('change', updateCostEstimate);
@@ -627,8 +642,18 @@
     // ── Show settings after file pick ─────────────────────
     function showSettings(file) {
         pendingFile = file;
+        pendingPageCount = null;
         settingsPanel.classList.add('visible');
         updateCostEstimate();
+        readPdfPageCount(file).then(n => {
+            pendingPageCount = n;
+            updateCostEstimate();
+            const pgEl = document.getElementById('pdfPageCount');
+            if (pgEl) pgEl.textContent = `${n} page${n > 1 ? 's' : ''}`;
+        }).catch(() => {
+            pendingPageCount = Math.max(1, Math.round(file.size / 400_000));
+            updateCostEstimate();
+        });
         const mb = (file.size / 1048576).toFixed(1);
         uploadZone.innerHTML = `
             <svg class="doc-icon" width="52" height="60" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -639,7 +664,7 @@
             </svg>
             <div class="upload-label" style="margin-bottom:1.35rem">
                 <strong style="color:var(--text)">${escHtml(file.name)}</strong><br>
-                <span style="color:var(--text-3);font-size:0.78rem;font-family:var(--mono)">${mb} MB</span>
+                <span style="color:var(--text-3);font-size:0.78rem;font-family:var(--mono)"><span id="pdfPageCount">…</span> · ${mb} MB</span>
             </div>
             <button class="btn primary" id="startBtn">Lancer le pipeline &rarr;</button>
         `;
