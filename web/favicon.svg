@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e1e2e"/>
+      <stop offset="100%" stop-color="#0a0a0f"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <rect width="64" height="64" rx="14" fill="none" stroke="#2a2a3a" stroke-width="1.2"/>
+
+  <!-- // slashes — brand element, top-right accent -->
+  <g fill="#6c8cff" opacity="0.55" font-family="'SF Mono','Fira Code',monospace" font-size="14" font-weight="700">
+    <text x="36" y="22" fill="#6c8cff" opacity="0.55" font-family="'SF Mono','Courier New',monospace" font-size="13" font-weight="800">//</text>
+  </g>
+
+  <!-- Bold P letterform — thick stem + open bowl -->
+  <!-- Stem -->
+  <rect x="13" y="15" width="8" height="34" rx="3" fill="#6c8cff"/>
+  <!-- Bowl outer -->
+  <path d="M21 15 h9 a11 11 0 0 1 0 19 h-9 z" fill="#6c8cff"/>
+  <!-- Bowl inner cutout -->
+  <path d="M21 20 h7 a6 6 0 0 1 0 9 h-7 z" fill="#0e0e18"/>
+</svg>

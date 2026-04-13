@@ -42,6 +42,11 @@ async def index():
     return (BASE_DIR / "web/index.html").read_text(encoding="utf-8")
 
 
+@app.get("/favicon.svg")
+async def favicon():
+    return FileResponse(BASE_DIR / "web/favicon.svg", media_type="image/svg+xml")
+
+
 @app.post("/api/upload")
 async def upload_pdf(
     file: UploadFile = File(...),
