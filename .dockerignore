@@ -1,0 +1,28 @@
+.git
+.github
+.DS_Store
+__pycache__
+*.py[cod]
+*.egg-info
+.venv
+venv
+
+# Runtime dirs (bind-mounted or server-generated)
+uploads/
+output/
+.cache/
+
+# Config (kept on server, not in image)
+config.yaml
+
+# Tests
+tests/
+
+# Docs
+*.md
+AUDIT.md
+LICENSE
+
+# Dev
+*.log
+.env

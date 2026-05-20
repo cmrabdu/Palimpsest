@@ -34,7 +34,7 @@ echo "  ✓"
 echo ""
 echo "[2/3] Build Docker..."
 cd "$APP_DIR"
-docker compose build
+DOCKER_BUILDKIT=1 docker compose build
 echo "  ✓"
 
 # ── 3. Restart (config.yaml + output intacts via bind mount) ───────────────
