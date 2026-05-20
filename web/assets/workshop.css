@@ -71,6 +71,53 @@
   text-wrap: pretty;
 }
 
+.def-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 6px;
+  padding: 12px 14px;
+  background: rgba(91, 79, 58, 0.04);
+  border-left: 3px solid var(--rule);
+  border-radius: 0 3px 3px 0;
+  max-width: 460px;
+  font-family: var(--sans);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+.def-card .def-marker {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--rule);
+  font-size: 20px;
+  line-height: 1;
+  flex: none;
+  margin-top: 1px;
+}
+.def-card .def-body em {
+  font-style: italic;
+  font-weight: 600;
+  color: var(--ink);
+}
+.def-card .def-link {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  color: var(--rule);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--rule);
+  margin-left: 6px;
+  flex: none;
+  white-space: nowrap;
+  align-self: flex-end;
+}
+.def-card .def-link:hover { color: var(--ink); border-bottom-color: var(--ink); }
+@media (max-width: 720px) {
+  .def-card { flex-wrap: wrap; }
+  .def-card .def-link { margin-left: 0; align-self: flex-start; }
+}
+
 .paper-body {
   display: flex;
   flex-direction: column;

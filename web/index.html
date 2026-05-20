@@ -141,14 +141,38 @@
         src:   'preserve images',
       });
 
-      const wsRef = useRef(null);
+      const wsRef               = useRef(null);
+      const reconnectTimerRef   = useRef(null);
+      const jobFinishedRef      = useRef(false);
 
       const cost = useMemo(() => {
         if (!pageCount) return null;
         return window.estimateCost(cfg, pageCount);
       }, [cfg, pageCount]);
 
-      const canStart = !!file && state === 'idle' && !uploading;
+      // canStart accepts any "not-currently-running" state — including
+      // 'done' and 'error' — so the user can immediately process another PDF
+      // after finishing/failing the first one.
+      const canStart = !!file && state !== 'processing' && !uploading;
+
+      // ── reset everything visible in the terminal/right pane ────────
+      const resetTerminal = useCallback(() => {
+        // Close any open WS and stop reconnect attempts
+        if (wsRef.current) { try { wsRef.current.close(); } catch {} }
+        wsRef.current = null;
+        if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+        jobFinishedRef.current = true; // prevents auto-reconnect of the prior socket
+
+        setJobId(null);
+        setState('idle');
+        setPage(0);
+        setTotal(0);
+        setStage('preprocessing');
+        setErrorMsg(null);
+        setHasPdf(true);
+        setLog([]);
+        setWsConnected(false);
+      }, []);
 
       // ── file picker ──────────────────────────────────────────────
       const onPick = useCallback(async (f) => {
@@ -156,6 +180,11 @@
           showToast('⚠ PDF required');
           return;
         }
+        // Picking a new file = fresh run. Clear the terminal so the UI is
+        // ready to start a new pipeline (fixes the "stuck after first job"
+        // bug where state stayed at 'done').
+        resetTerminal();
+
         setFile(f);
         setPageCount(null);
         setFlash(true);
@@ -168,13 +197,14 @@
           // fallback estimate
           setPageCount(Math.max(1, Math.round(f.size / 400_000)));
         }
-      }, []);
+      }, [resetTerminal]);
 
       const onClear = useCallback((e) => {
         e?.stopPropagation();
         setFile(null);
         setPageCount(null);
-      }, []);
+        resetTerminal();
+      }, [resetTerminal]);
 
       // ── start pipeline ───────────────────────────────────────────
       const onStart = useCallback(async () => {
@@ -204,9 +234,6 @@
       }, [file, cfg]);
 
       // ── connect to a job (new or resumed) ────────────────────────
-      const reconnectTimerRef = React.useRef(null);
-      const jobFinishedRef   = React.useRef(false);
-
       const connectWs = useCallback((id) => {
         if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
         const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';

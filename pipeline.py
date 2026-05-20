@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+import re
 import sys
 from pathlib import Path
 from typing import Callable
@@ -251,15 +252,24 @@ async def run_pipeline(
 
     # ── Step 5: Merge & export ────────────────────────
     console.print("\n[bold cyan]▸ Assembling LaTeX document[/]...")
-    title = context.document_title or pdf.stem.replace("_", " ").title()
+
+    # Strip the 8-char hex UUID prefix the server prepends to avoid upload
+    # collisions (e.g. "c8de9fdb_labophysique" -> "labophysique"). Pattern is
+    # exactly 8 hex chars + underscore.
+    clean_stem = re.sub(r"^[0-9a-f]{8}_", "", pdf.stem)
+
+    # Title — prefer the AI-detected one. Don't fall back to the input filename
+    # (the user explicitly does NOT want the upload name to leak into the doc).
+    title = context.document_title or "Document"
     subtitle = context.document_subtitle
     if not subtitle and context.discipline:
         subtitle = f"Cours de {context.discipline}"
     author = context.author
     blurb_enabled = config.get("output", {}).get("include_palimpsest_blurb", True)
 
-    # Slug the title for a clean output filename (falls back to pdf.stem)
-    out_slug = slugify(title, fallback=pdf.stem)
+    # Slug for the output filename. When the AI gave a title, slugify it; else
+    # use the cleaned input stem so we never leak the UUID prefix.
+    out_slug = slugify(title if context.document_title else clean_stem, fallback="document")
 
     if do_merge:
         final_tex = merge_pages_latex(

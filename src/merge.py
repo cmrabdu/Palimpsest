@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from datetime import date
 from pathlib import Path
 
 from .sanitize import sanitize_title
@@ -113,18 +112,14 @@ def _titlepage(
     lines: list[str] = []
     lines.append(r"\begin{titlepage}")
     lines.append(r"\centering")
-    lines.append(r"\vspace*{2cm}")
-    lines.append(r"{\Large\itshape Clean retranscription\par}")
-    lines.append(r"\vspace{1.5cm}")
+    lines.append(r"\vspace*{3.5cm}")
     lines.append(r"{\Huge\bfseries " + safe_title + r"\par}")
     if safe_subtitle:
-        lines.append(r"\vspace{0.6cm}")
+        lines.append(r"\vspace{0.8cm}")
         lines.append(r"{\Large\itshape " + safe_subtitle + r"\par}")
     lines.append(r"\vspace{2.5cm}")
     if safe_author:
         lines.append(r"{\large " + safe_author + r"\par}")
-        lines.append(r"\vspace{0.4cm}")
-    lines.append(r"{\small " + date.today().strftime("%d %B %Y") + r"\par}")
 
     if include_blurb:
         lines.append(r"\vfill")
@@ -164,11 +159,12 @@ def merge_pages_latex(
     """
     parts = [LATEX_PREAMBLE]
 
-    # Drive \title / \author / \date — kept in case downstream tools want them,
+    # Drive \title / \author — kept in case downstream tools want them,
     # though we render our own titlepage rather than calling \maketitle.
+    # \date is left empty on purpose — the cover page shouldn't be stamped.
     parts.append(f"\\title{{{sanitize_title(title) or 'Document'}}}\n")
     parts.append(f"\\author{{{sanitize_title(author)}}}\n")
-    parts.append(f"\\date{{{date.today().isoformat()}}}\n\n")
+    parts.append("\\date{}\n\n")
 
     parts.append(r"\begin{document}" + "\n\n")
 

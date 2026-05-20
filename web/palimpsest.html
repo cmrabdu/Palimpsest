@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Palimpsest — the word, the practice, the metaphor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A palimpsest is a manuscript scraped clean and written over, with traces of the older text still bleeding through. This is the etymology, the history, and the practice behind the word.">
+  <meta name="theme-color" content="#f1e7d0">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;1,400;1,500;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/brand/favicon-16.png">
+  <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+
+  <meta property="og:title" content="Palimpsest — the word, the practice, the metaphor">
+  <meta property="og:description" content="A manuscript page scraped clean and written over — but the original text still bleeds through. The history of a fascinating word.">
+  <meta property="og:image" content="/brand/og-image.png">
+  <meta property="og:type" content="article">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="stylesheet" href="/assets/styles.css">
+  <style>
+    body { background: var(--paper); }
+
+    .essay {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 40px 48px 80px;
+      position: relative;
+    }
+    .essay::before {
+      content: '';
+      position: absolute;
+      left: 28px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--rule);
+      opacity: 0.85;
+    }
+
+    /* HEADER */
+    .essay-head {
+      padding: 8px 0 38px 60px;
+      border-bottom: 1px solid rgba(91,79,58,0.25);
+      margin-bottom: 48px;
+    }
+    .essay-eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--rule);
+      font-weight: 700;
+      margin: 0 0 14px;
+    }
+    .essay-title {
+      font-family: var(--serif);
+      font-size: 72px;
+      line-height: 0.95;
+      font-weight: 500;
+      margin: 0;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .essay-title .slash {
+      font-family: var(--mono);
+      font-weight: 700;
+      color: var(--rule);
+      font-size: 56px;
+      vertical-align: middle;
+      letter-spacing: -0.04em;
+      margin-right: 14px;
+    }
+    .essay-title em {
+      font-style: italic;
+      font-weight: 400;
+    }
+    .essay-deck {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 20px;
+      line-height: 1.5;
+      color: var(--ink-soft);
+      margin: 22px 0 0;
+      max-width: 600px;
+    }
+    .essay-meta {
+      display: flex;
+      gap: 18px;
+      margin-top: 26px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      color: var(--ink-soft);
+      flex-wrap: wrap;
+    }
+    .essay-meta a {
+      color: var(--ink);
+      border-bottom: 1px dotted var(--rule);
+      text-decoration: none;
+    }
+    .essay-meta a:hover { color: var(--rule); }
+
+    /* SECTIONS */
+    .essay-section {
+      padding-left: 60px;
+      margin-bottom: 56px;
+    }
+    .essay-section .sec-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      color: var(--rule);
+      margin: 0 0 10px;
+      text-transform: uppercase;
+    }
+    .essay-section h2 {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 1.15;
+      margin: 0 0 22px;
+      color: var(--ink);
+    }
+    .essay-section p {
+      font-family: var(--serif);
+      font-size: 18px;
+      line-height: 1.7;
+      color: var(--ink);
+      margin: 0 0 18px;
+    }
+    .essay-section p.lead::first-letter {
+      font-family: var(--serif);
+      font-weight: 600;
+      font-size: 64px;
+      line-height: 0.85;
+      float: left;
+      margin: 6px 10px 0 0;
+      color: var(--rule);
+    }
+    .essay-section p strong { font-weight: 600; }
+    .essay-section p em { font-style: italic; }
+    .essay-section a {
+      color: var(--ink);
+      border-bottom: 1px solid rgba(91,79,58,0.45);
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    .essay-section a:hover {
+      color: var(--rule);
+      border-bottom-color: var(--rule);
+    }
+
+    /* etymology box */
+    .etym-card {
+      margin: 12px 0 28px;
+      padding: 22px 26px;
+      background: white;
+      border: 1px solid rgba(91,79,58,0.18);
+      border-left: 4px solid var(--rule);
+      border-radius: 3px;
+      box-shadow: 0 10px 22px -16px rgba(60,40,10,0.35);
+    }
+    .etym-card .word {
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 500;
+      font-size: 28px;
+      color: var(--ink);
+      margin: 0 0 4px;
+    }
+    .etym-card .ipa {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--ink-soft);
+      margin: 0 0 14px;
+    }
+    .etym-card .gloss {
+      font-family: var(--sans);
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--ink);
+      margin: 0;
+    }
+    .etym-card .greek {
+      font-family: 'Spectral', serif;
+      font-style: italic;
+      color: var(--rule);
+    }
+
+    /* timeline */
+    .timeline {
+      margin: 28px 0;
+      padding-left: 18px;
+      border-left: 1px dashed rgba(91,79,58,0.35);
+    }
+    .tl-entry {
+      position: relative;
+      padding: 6px 0 22px 24px;
+    }
+    .tl-entry::before {
+      content: '';
+      position: absolute;
+      left: -25px;
+      top: 12px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--paper);
+      border: 2px solid var(--rule);
+    }
+    .tl-year {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--rule);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .tl-head {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 18px;
+      color: var(--ink);
+      margin: 0 0 4px;
+    }
+    .tl-body {
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--ink-soft);
+      margin: 0;
+    }
+
+    /* pull-quote */
+    .pull {
+      margin: 32px 0;
+      padding: 0 0 0 28px;
+      border-left: 3px solid var(--rule);
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 22px;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+    .pull cite {
+      display: block;
+      margin-top: 12px;
+      font-style: normal;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--ink-soft);
+      text-transform: uppercase;
+    }
+
+    /* parchment SVG illustration */
+    .parchment-vis {
+      margin: 28px 0 32px;
+      padding: 24px;
+      background: #f6e9c8;
+      border: 1px solid rgba(91,79,58,0.2);
+      border-radius: 4px;
+      box-shadow: inset 0 0 80px rgba(120,90,30,0.12), 0 12px 26px -18px rgba(60,40,10,0.4);
+      position: relative;
+      overflow: hidden;
+    }
+    .parchment-vis::before,
+    .parchment-vis::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .parchment-vis::before {
+      background: radial-gradient(ellipse at 30% 20%, rgba(160,110,40,0.18), transparent 60%);
+    }
+    .parchment-vis::after {
+      background: radial-gradient(ellipse at 70% 80%, rgba(160,110,40,0.14), transparent 55%);
+    }
+    .parchment-text {
+      position: relative;
+      z-index: 1;
+      font-family: 'Spectral', serif;
+      line-height: 1.7;
+      font-size: 15px;
+      color: rgba(60,40,10,0.85);
+      max-width: 680px;
+    }
+    .parchment-text .ghost {
+      color: rgba(60,40,10,0.25);
+      font-style: italic;
+      transform: rotate(-2deg);
+      display: inline-block;
+      letter-spacing: 0.04em;
+    }
+    .parchment-text .ghost.overlay {
+      position: absolute;
+      pointer-events: none;
+      mix-blend-mode: multiply;
+      opacity: 0.55;
+    }
+    .parchment-text .new {
+      color: rgba(60,40,10,0.92);
+      font-weight: 500;
+      position: relative;
+      z-index: 2;
+    }
+    .parchment-vis .caption {
+      position: relative;
+      z-index: 2;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(91,79,58,0.75);
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px dashed rgba(91,79,58,0.3);
+    }
+
+    /* example cards */
+    .examples {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+    .example {
+      background: white;
+      border: 1px solid rgba(91,79,58,0.18);
+      border-radius: 4px;
+      padding: 22px 22px 20px;
+      box-shadow: 0 10px 22px -16px rgba(60,40,10,0.35);
+    }
+    .example .ex-year {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      color: var(--rule);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .example h4 {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 20px;
+      font-weight: 500;
+      margin: 0 0 10px;
+      color: var(--ink);
+    }
+    .example p {
+      font-family: var(--sans);
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--ink-soft);
+      margin: 0 0 10px;
+    }
+    .example p:last-child { margin-bottom: 0; }
+
+    /* CTA back to workshop */
+    .closing {
+      margin-top: 56px;
+      margin-left: 60px;
+      padding: 32px 36px;
+      background: var(--ink);
+      color: var(--paper);
+      border-radius: 6px;
+      max-width: 720px;
+      position: relative;
+      overflow: hidden;
+    }
+    .closing::before {
+      content: '//';
+      position: absolute;
+      top: 18px;
+      right: 24px;
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 22px;
+      color: var(--rule);
+      letter-spacing: -0.04em;
+    }
+    .closing h3 {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 26px;
+      font-weight: 500;
+      margin: 0 0 12px;
+      color: var(--paper);
+    }
+    .closing p {
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.6;
+      color: rgba(241,231,208,0.78);
+      margin: 0 0 22px;
+      max-width: 540px;
+    }
+    .closing .btn-primary,
+    .closing .btn-secondary {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      padding: 9px 18px;
+      border-radius: 3px;
+      text-decoration: none;
+      transition: transform 0.15s ease;
+      display: inline-block;
+    }
+    .closing .btn-primary {
+      background: var(--rule);
+      color: var(--paper);
+      margin-right: 8px;
+    }
+    .closing .btn-secondary {
+      background: transparent;
+      color: var(--paper);
+      border: 1px solid rgba(241,231,208,0.3);
+    }
+    .closing .btn-primary:hover,
+    .closing .btn-secondary:hover { transform: translateY(-1px); }
+
+    /* hairline asides */
+    .aside {
+      font-family: var(--sans);
+      font-size: 13px;
+      color: var(--ink-soft);
+      font-style: italic;
+      margin: 12px 0 28px;
+      padding-left: 14px;
+      border-left: 2px solid rgba(91,79,58,0.2);
+      line-height: 1.6;
+    }
+
+    @media (max-width: 720px) {
+      .essay { padding: 24px 20px 60px; }
+      .essay::before { left: 12px; }
+      .essay-head { padding-left: 32px; }
+      .essay-title { font-size: 48px; }
+      .essay-title .slash { font-size: 36px; }
+      .essay-section { padding-left: 32px; }
+      .essay-section h2 { font-size: 26px; }
+      .essay-section p { font-size: 17px; }
+      .closing { margin-left: 32px; padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <article class="essay">
+
+    <!-- HEADER ------------------------------------------------------ -->
+    <header class="essay-head">
+      <p class="essay-eyebrow">§ word · history · metaphor</p>
+      <h1 class="essay-title">
+        <span class="slash">//</span><em>Palimpsest</em>
+      </h1>
+      <p class="essay-deck">
+        A manuscript page scraped clean and written over — but the older
+        writing keeps bleeding through. The word, the practice, and the
+        metaphor behind the tool you're using.
+      </p>
+      <div class="essay-meta">
+        <span>READING TIME · 5 MIN</span>
+        <span>·</span>
+        <a href="/about.html">about the project ↗</a>
+        <span>·</span>
+        <a href="/">back to workshop</a>
+      </div>
+    </header>
+
+    <!-- § 01 — THE WORD ----------------------------------------------->
+    <section class="essay-section">
+      <p class="sec-num">§ 01 · the word</p>
+      <h2>Greek for "scraped again"</h2>
+
+      <div class="etym-card">
+        <p class="word">palimpsest</p>
+        <p class="ipa">/ˈpalɪmp.sɛst/ · noun</p>
+        <p class="gloss">
+          From the Greek <span class="greek">παλίμψηστος (palímpsēstos)</span>,
+          itself from <span class="greek">πάλιν (pálin)</span>, "again," and
+          <span class="greek">ψάω (psáō)</span>, "to rub, scrape." Literally:
+          <em>scraped again</em>. A manuscript page from which the writing has
+          been erased to make room for another text, with traces of the earlier
+          writing still visible underneath.
+        </p>
+      </div>
+
+      <p class="lead">
+        Before paper, writing happened on <em>parchment</em> — animal skin
+        stretched, dried, scraped flat. Making it was expensive and slow: one
+        sheep, one goat, one calf per few dozen pages. So when a manuscript fell
+        out of use — a dead grammar treatise, an obsolete theological
+        commentary, a play nobody read anymore — the skin itself was too
+        valuable to throw away.
+      </p>
+      <p>
+        Monks and scribes would take the old book apart, soak each leaf in milk
+        or lye to soften the ink, and scrape the surface clean with a pumice
+        stone. The page came out a little thinner, a little rougher, but blank.
+        Ready to be ruled, ready to be written on again.
+      </p>
+      <p>
+        Except the ink never really left.
+      </p>
+    </section>
+
+    <!-- § 02 — THE PRACTICE ----------------------------------------- -->
+    <section class="essay-section">
+      <p class="sec-num">§ 02 · the practice</p>
+      <h2>The ghost in the page</h2>
+
+      <p>
+        Iron-gall ink, the standard writing fluid of the Middle Ages, doesn't
+        just sit on parchment — it bites into it. The iron salts react with the
+        protein of the skin, leaving a faint chemical shadow even after the
+        visible ink has been scraped away. Five hundred years later, under
+        specific lighting or with the right imaging technique, the original
+        writing comes back like a developed photograph.
+      </p>
+
+      <div class="parchment-vis">
+        <div class="parchment-text">
+          <span class="ghost">Tractatus de motu corporum gravium et levium…</span><br>
+          <span class="new">In hoc codice continetur officium divinum,</span><br>
+          <span class="new">secundum usum Romanum, ad horas canonicas</span><br>
+          <span class="ghost">…velocitas crescit ut quadratum temporis…</span><br>
+          <span class="new">recitandas a fratribus ordinis sancti Benedicti.</span>
+        </div>
+        <p class="caption">↑ schematic: one page, two layers — old text bleeding through new</p>
+      </div>
+
+      <p>
+        That bleed-through is the entire point of the word. A palimpsest isn't
+        just a page that's been reused; it's a page where the past <em>refuses
+        to disappear</em>. Two texts share the same surface, one nominally on
+        top of the other, but both legible to anyone who looks closely enough.
+      </p>
+
+      <p class="aside">
+        Scholars distinguish three states: <strong>scriptio prior</strong>
+        (the earlier text), <strong>scriptio inferior</strong> (its ghost
+        underneath), and <strong>scriptio superior</strong> (the new text on
+        top). The discipline of recovering the lost layer is called
+        <em>palimpsestography</em>.
+      </p>
+    </section>
+
+    <!-- § 03 — FAMOUS PALIMPSESTS ----------------------------------- -->
+    <section class="essay-section">
+      <p class="sec-num">§ 03 · famous examples</p>
+      <h2>Lost works, found again</h2>
+      <p>
+        Some of the most important manuscripts in the history of science and
+        literature aren't original at all — they're recovered <em>scriptio
+        inferior</em> texts, pulled out of pages that monks reused for
+        prayerbooks. A few of the most striking cases:
+      </p>
+
+      <div class="examples">
+        <div class="example">
+          <div class="ex-year">10TH CENTURY</div>
+          <h4>The Archimedes Palimpsest</h4>
+          <p>
+            A 13th-century Byzantine prayerbook turned out to contain — scraped
+            and overwritten beneath the liturgy — the only surviving copies of
+            Archimedes' <em>Method</em>, <em>Stomachion</em>, and parts of
+            <em>On Floating Bodies</em>.
+          </p>
+          <p>
+            Recovered using X-ray fluorescence imaging at Stanford between 1999
+            and 2008. The Method contains the first known use of actual
+            infinity in mathematics, predating Newton by roughly 1,900 years.
+          </p>
+        </div>
+        <div class="example">
+          <div class="ex-year">5TH CENTURY</div>
+          <h4>Codex Ephraemi Rescriptus</h4>
+          <p>
+            A Greek New Testament copied in the 5th century, scraped clean in
+            the 12th to make room for sermons by Ephrem the Syrian. The earlier
+            biblical text is now one of the four most important Greek witnesses
+            to the New Testament.
+          </p>
+          <p>
+            Held at the Bibliothèque nationale de France. First deciphered in
+            1834 with reagents that, ironically, damaged the parchment further.
+          </p>
+        </div>
+        <div class="example">
+          <div class="ex-year">7TH CENTURY</div>
+          <h4>Codex Sangallensis 908</h4>
+          <p>
+            A St. Gall manuscript that hides, beneath later glossaries, the
+            only known fragments of a lost Old High German poem cycle and
+            several pages of grammatical treatises by Priscian.
+          </p>
+          <p>
+            Multi-spectral imaging in the 2000s recovered text that had been
+            invisible to the naked eye since the 9th century.
+          </p>
+        </div>
+        <div class="example">
+          <div class="ex-year">6TH–13TH C.</div>
+          <h4>The Sinai Palimpsests Project</h4>
+          <p>
+            St. Catherine's Monastery in Sinai holds more than 160 palimpsest
+            manuscripts. Since 2011 a multi-institutional project has been
+            imaging them with multispectral cameras, recovering texts in
+            Caucasian Albanian, Christian Palestinian Aramaic, Old Syriac and
+            Greek — many of them otherwise lost languages.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- § 04 — METAPHOR --------------------------------------------- -->
+    <section class="essay-section">
+      <p class="sec-num">§ 04 · the metaphor</p>
+      <h2>Why the word kept being borrowed</h2>
+      <p>
+        By the 19th century the word had escaped manuscript studies and started
+        showing up everywhere. Thomas De Quincey wrote that the human mind is a
+        palimpsest — every impression is overwritten by the next, but none of
+        them are ever truly erased. Freud picked the metaphor up for memory.
+        Architects use it for cities: Rome is a palimpsest of streets laid over
+        older streets laid over older ruins. Geologists use it for landscapes
+        where glaciers have rewritten what rivers carved.
+      </p>
+
+      <div class="pull">
+        "The deep memorial palimpsest of the brain… everlasting layers of
+        ideas, images, feelings, have fallen upon your brain, softly as light.
+        Each succession has seemed to bury all that went before. And yet, in
+        reality, not one has been extinguished."
+        <cite>Thomas De Quincey · Suspiria de Profundis · 1845</cite>
+      </div>
+
+      <p>
+        The pattern is always the same: a surface, a past version of itself,
+        and the way the past keeps showing through. It's the word you reach for
+        when "overwritten" feels too clean and "layered" feels too neat —
+        because a palimpsest is neither. It's a record of erasure that
+        somehow refuses to be erased.
+      </p>
+    </section>
+
+    <!-- § 05 — WHY THIS TOOL --------------------------------------- -->
+    <section class="essay-section">
+      <p class="sec-num">§ 05 · back to the tool</p>
+      <h2>What it has to do with scanned PDFs</h2>
+      <p>
+        A scanned page of handwritten lecture notes is a kind of modern
+        palimpsest. The original is buried under decades of photocopies,
+        smudges, photographs of photocopies, JPEG compression, paper darkening
+        with age. The text is still there — your professor wrote it once,
+        twenty years ago — but you have to read <em>through</em> all that noise
+        to recover it.
+      </p>
+      <p>
+        That's what this tool does. It doesn't replace the original. It reads
+        through the noise, recognises the writing that's still there under all
+        the photocopier static, and produces a clean copy you can actually use.
+        The old page stays exactly where it is, in whatever dusty box your
+        professor keeps the masters in. But the content — the part that
+        matters — is recoverable.
+      </p>
+      <p>
+        The name felt right because the practice is right. We're not OCR-ing.
+        We're not transcribing. We're doing palimpsestography on a 50-year-old
+        polycopié.
+      </p>
+    </section>
+
+    <!-- CLOSING ----------------------------------------------------- -->
+    <div class="closing">
+      <h3>Want to see it work?</h3>
+      <p>
+        Drop a scan on the workshop. Watch the pipeline read through the
+        noise. Get a clean LaTeX document back in a few minutes.
+      </p>
+      <a class="btn-primary" href="/">▷ open the workshop</a>
+      <a class="btn-secondary" href="/about.html">how it works ↗</a>
+    </div>
+
+    <!-- FOOTER ------------------------------------------------------ -->
+    <footer style="margin-top: 48px; padding: 22px 0 0 60px; border-top: 1px solid rgba(91,79,58,0.25); font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.08em; display: flex; gap: 12px; flex-wrap: wrap;">
+      <span>made with ♥ by @cmrabdu</span>
+      <span>·</span>
+      <a class="footer-link" href="/">workshop</a>
+      <span>·</span>
+      <a class="footer-link" href="/about.html">about</a>
+      <span>·</span>
+      <a class="footer-link" href="/brand.html">brand</a>
+      <span>·</span>
+      <a class="footer-link" href="https://github.com/cmrabdu/Palimpsest" target="_blank" rel="noreferrer">github ↗</a>
+      <span style="margin-left: auto; font-family: var(--serif); font-style: italic; color: var(--ink-faint); font-size: 12px;">vol. iii · the word</span>
+    </footer>
+  </article>
+</body>
+</html>

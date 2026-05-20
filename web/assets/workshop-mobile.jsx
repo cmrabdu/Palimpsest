@@ -25,6 +25,14 @@ function MobileWorkshop(props) {
       </div>
 
       <p className="m-promise">Drop your old scan, get a clean scientific document back.</p>
+      <div className="def-card" aria-label="What is a palimpsest?">
+        <span className="def-marker">¶</span>
+        <span className="def-body">
+          <em>palimpsest</em> · a manuscript page scraped clean and written
+          over, with traces of the original still showing through.
+        </span>
+        <a className="def-link" href="/palimpsest.html">read more ↗</a>
+      </div>
 
       <div className="m-paper-body">
         {/* Dropzone */}

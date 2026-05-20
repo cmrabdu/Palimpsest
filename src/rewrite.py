@@ -198,12 +198,14 @@ inconsistencies_detected: []
 ```
 
 Champs obligatoires : chapter_number, current_section.
-Champs PRIORITAIRES (à remplir dès qu'ils sont déductibles, en général dès la page 1) :
-- document_title : titre exact du cours / polycopié — sans numéro de chapitre, sans nom de l'étudiant
+Champs PRIORITAIRES (à remplir dès la page 1, OBLIGATOIRE pour document_title) :
+- document_title : **TOUJOURS** fournir un titre éditorial concis et lisible (3-6 mots).
+  • Si la page 1 montre un titre explicite, le reprendre exactement (sans numéro de chapitre, sans nom d'étudiant, sans nom de fichier).
+  • Sinon, en déduire un d'après la matière + sujet principal — ex. "Statique du solide", "Thermodynamique des gaz", "Travaux pratiques de chimie organique".
+  • **NE JAMAIS** mettre un nom de fichier brut, un identifiant, ou un nom de personne comme titre.
 - document_subtitle : sous-titre éventuel (ex : "Cours de mécanique des fluides")
 - discipline : mot court — "physique", "mathématiques", "chimie", "mécanique", "ingénierie", etc.
-- author : nom de l'enseignant ou de l'auteur si visible sur la page
-Si l'un de ces champs reste inconnu, l'omettre — ne PAS inventer.
+- author : nom de l'enseignant ou de l'auteur si visible sur la page (l'omettre si pas visible — ne PAS inventer)
 Champs optionnels : chapter_title, new_variables, new_conventions, inconsistencies_detected.
 Ne pas inclure de commentaires méta. Juste le LaTeX + le bloc contexte."""
 
@@ -348,12 +350,14 @@ inconsistencies_detected: []
 ```
 
 Champs obligatoires : chapter_number, current_section.
-Champs PRIORITAIRES (à remplir dès qu'ils sont déductibles, en général dès la page 1) :
-- document_title : titre exact du cours / polycopié — sans numéro de chapitre, sans nom de l'étudiant
+Champs PRIORITAIRES (à remplir dès la page 1, OBLIGATOIRE pour document_title) :
+- document_title : **TOUJOURS** fournir un titre éditorial concis et lisible (3-6 mots).
+  • Si la page 1 montre un titre explicite, le reprendre exactement (sans numéro de chapitre, sans nom d'étudiant, sans nom de fichier).
+  • Sinon, en déduire un d'après la matière + sujet principal — ex. "Statique du solide", "Thermodynamique des gaz", "Travaux pratiques de chimie organique".
+  • **NE JAMAIS** mettre un nom de fichier brut, un identifiant, ou un nom de personne comme titre.
 - document_subtitle : sous-titre éventuel (ex : "Cours de mécanique des fluides")
 - discipline : mot court — "physique", "mathématiques", "chimie", "mécanique", "ingénierie", etc.
-- author : nom de l'enseignant ou de l'auteur si visible sur la page
-Si l'un de ces champs reste inconnu, l'omettre — ne PAS inventer.
+- author : nom de l'enseignant ou de l'auteur si visible sur la page (l'omettre si pas visible — ne PAS inventer)
 Champs optionnels : chapter_title, new_variables, new_conventions, inconsistencies_detected.
 Ne pas inclure de commentaires méta. Juste le LaTeX + le bloc contexte."""
 

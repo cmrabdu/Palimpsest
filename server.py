@@ -143,6 +143,11 @@ async def about_page():
     return (BASE_DIR / "web/about.html").read_text(encoding="utf-8")
 
 
+@app.get("/palimpsest.html", response_class=HTMLResponse)
+async def palimpsest_page():
+    return (BASE_DIR / "web/palimpsest.html").read_text(encoding="utf-8")
+
+
 @app.get("/favicon.svg")
 async def favicon_svg():
     return FileResponse(BASE_DIR / "web/brand/favicon.svg", media_type="image/svg+xml")

@@ -109,6 +109,15 @@ function PaperHeader() {
       <p className="promise">
         Drop your old scan, get a clean scientific document back.
       </p>
+      <div className="def-card" aria-label="What is a palimpsest?">
+        <span className="def-marker">¶</span>
+        <span className="def-body">
+          <em>palimpsest</em> · a manuscript page scraped clean and written
+          over, with traces of the original text still showing through. That's
+          what this tool does to your scans.
+        </span>
+        <a className="def-link" href="/palimpsest.html">read the etymology ↗</a>
+      </div>
     </div>
   );
 }
