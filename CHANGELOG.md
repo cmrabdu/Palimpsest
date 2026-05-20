@@ -5,7 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0] — 2026-05-20
+
+### Added
+- **Brand kit** — full logo / mark / favicon / banner / OG-image set under `web/brand/`, served via `/brand/...` and showcased at `/brand.html`.
+- **Palimpsest cover page** — every compiled `.tex` / `.pdf` now opens with a clean titlepage carrying the detected title, subtitle (discipline), author, and a generic Palimpsest blurb with a link to the project repo. Toggle via `output.include_palimpsest_blurb` in `config.yaml`.
+- **LaTeX sanitizer** (`src/sanitize.py`) — per-page post-pass that scrubs the patterns most likely to break Overleaf compilation: leaking ```` ```latex ```` fences, forbidden physics-package macros (`\dv`, `\pdv`, `\qty`), `\begin{paragraph}{...}` environment misuse, `$$..$$` display blocks, orphan `tikzpicture` blocks, bare leading-dash lists, leading numeric prefixes in section titles, unbalanced `$`.
+- **Document metadata extraction** — prompts now require the LLM to emit `document_title`, `document_subtitle`, `discipline`, and `author` (when visible) as part of the YAML context block on page 1; values flow into the cover page.
+- **Slugged output filenames** — output `.tex` / `.pdf` use a clean ASCII slug of the detected title instead of the raw upload filename.
+- **Resilient preamble** — `adjustbox` is now loaded with `\IfFileExists` + a no-op stub, so PDF compile works on minimal LaTeX installs.
+
+### Changed
+- Tightened the rewrite system prompts (Anthropic + OpenAI, both with and without image): explicit ban on ```` ``` ```` fences, `\maketitle`, `\tableofcontents`, `\begin{document}`, and `\begin{paragraph}` environments; clarified the YAML metadata fields.
+- `merge.py` now renders a custom `\begin{titlepage}` block in place of `\maketitle` and routes all user-supplied strings through `sanitize_title()` (full LaTeX-special escaping, not just `_` / `&`).
+
+## [0.1.1]
+
+### Changed
+- **Complete UI redesign** — "workshop × terminal" high-fidelity design across `/` and `/jobs.html`. Paper-and-ink left half (dropzone + specimen config) seamed to a terminal right half (stage chips, weighted progress bar, live `pipeline.log` tail, output buttons). The archive register becomes a ledger with stamped masthead, stats cards, filter pills, and live polling.
+- React-based front-end (CDN React 18 + Babel standalone) replaces the previous vanilla DOM rendering. Shared component library in `web/assets/components.jsx`; pages compose `Workshop`, `MobileWorkshop`, and `JobsPage`.
+- Konami code switches between *ink-blue* and *parchment* themes (was dark/parchemin).
+- Workshop URL accepts `?job=<id>` to resume tracking an in-flight pipeline; the archive's "view live" button links here.
+- Stage chips map server progress events to four columns — `preprocess → ocr → rewrite → compile` — with weighted overall progress (0-25% / 25-55% / 55-95% / 95-100%).
+
+### Fixed
+- `/api/jobs/list` and `/api/jobs/latest` were being shadowed by `/api/jobs/{job_id}` due to FastAPI route declaration order. Declared the literal-path routes first so they match correctly.
+
+### Added
+- `app.mount("/assets", StaticFiles(...))` to serve the new CSS/JSX bundles.
+- File-picker `clear` action on the dropzone (X button beside the staged-file row).
 
 ### Added
 - Persistent job history — all jobs saved to `.cache/jobs_history.json`, survives server restarts

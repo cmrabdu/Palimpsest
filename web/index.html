@@ -1,874 +1,362 @@
-<!DOCTYPE html>
+<!doctype html>
 <!--
   \documentclass[mystique]{palimpsest}
-  % Vous lisez le source HTML.
-  % Bienvenue dans les coulisses.
-  % Le vrai document est ailleurs — sous la surface.
+  % You are reading the HTML source.
+  % Welcome backstage.
+  % The real document lies elsewhere — beneath the surface.
 -->
-<html lang="fr" data-mode="dark">
+<html lang="en" data-theme="default">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Palimpsest — PDF → LaTeX</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="apple-touch-icon" href="/favicon.svg">
-    <meta name="theme-color" content="#080810">
-    <meta name="description" content="Scanned PDFs → Clean LaTeX documents via OCR + LLM">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    /* ── TOKENS ──────────────────────── */
-    :root {
-        --bg:         #07070e;
-        --surface:    #0f0f1a;
-        --surface-2:  #161624;
-        --surface-3:  #1e1e30;
-        --border:     #22223a;
-        --border-hi:  #323255;
-        --text:       #ddddef;
-        --text-2:     #7070a0;
-        --text-3:     #40406a;
-        --accent:     #6c8cff;
-        --accent-dim: #4a68e0;
-        --accent-lo:  #6c8cff18;
-        --accent-mid: #6c8cff33;
-        --green:      #4ade80;
-        --red:        #f87171;
-        --r:          14px;
-        --r-sm:       8px;
-        --font:       'Inter', -apple-system, system-ui, sans-serif;
-        --mono:       'JetBrains Mono', 'Fira Code', monospace;
+  <meta charset="utf-8">
+  <title>Palimpsest — scan → ocr → llm → LaTeX</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f1e7d0">
+  <meta name="description" content="Drop a scanned PDF, get a clean scientific LaTeX document back.">
+  <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/brand/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/brand/apple-touch-icon.png">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Palimpsest — scan → ocr → llm → LaTeX">
+  <meta property="og:description" content="Drop your old scan, get a clean scientific document back.">
+  <meta property="og:image" content="/brand/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Palimpsest — scan → ocr → llm → LaTeX">
+  <meta name="twitter:description" content="Drop your old scan, get a clean scientific document back.">
+  <meta name="twitter:image" content="/brand/og-image.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;1,400;1,500;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/styles.css">
+  <link rel="stylesheet" href="/assets/workshop.css">
+  <style>
+    body { overflow-x: hidden; }
+    /* toast (lifted from old design, restyled to paper) */
+    .toast {
+      position: fixed;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: var(--paper);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      padding: 10px 18px;
+      border-radius: 3px;
+      box-shadow: 2px 2px 0 var(--ochre-deep), 0 12px 24px -10px rgba(0,0,0,0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms, transform 200ms;
+      z-index: 100;
     }
-
-    /* ── PARCHEMIN OVERRIDE ──────────── */
-    html[data-mode="parchemin"] {
-        --bg:         #f0e6cc;
-        --surface:    #e7dab8;
-        --surface-2:  #dccfa6;
-        --surface-3:  #d0c090;
-        --border:     #b09060;
-        --border-hi:  #907040;
-        --text:       #1c1005;
-        --text-2:     #5a3818;
-        --text-3:     #8a6838;
-        --accent:     #8b3a0a;
-        --accent-dim: #5c2606;
-        --accent-lo:  #8b3a0a12;
-        --accent-mid: #8b3a0a28;
-        --green:      #2d5916;
-        --red:        #8b1a1a;
-        --font: 'Georgia', 'Palatino Linotype', serif;
-    }
-
-    /* ── BASE ───────────────────────── */
-    html { color-scheme: dark; }
-    html[data-mode="parchemin"] { color-scheme: light; }
-
-    body {
-        font-family: var(--font);
-        background: var(--bg);
-        color: var(--text);
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 3rem 1.5rem 5rem;
-    }
-
-    /* Film-grain overlay */
-    body::before {
-        content: '';
-        position: fixed; inset: 0;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23g)'/%3E%3C/svg%3E");
-        opacity: 0.028;
-        pointer-events: none;
-        z-index: 9999;
-    }
-
-    /* Ambient top glow */
-    body::after {
-        content: '';
-        position: fixed;
-        top: -30%; left: 50%;
-        transform: translateX(-50%);
-        width: 700px; height: 500px;
-        background: radial-gradient(ellipse, var(--accent-lo) 0%, transparent 68%);
-        pointer-events: none;
-        z-index: 0;
-    }
-
-    .container {
-        max-width: 600px;
-        width: 100%;
-        position: relative;
-        z-index: 1;
-    }
-
-    /* ── HEADER ─────────────────────── */
-    .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 2rem;
-        margin-bottom: 2.75rem;
-        animation: slideUp 0.65s cubic-bezier(0.16,1,0.3,1) both;
-    }
-
-    .logo {
-        display: inline-flex;
-        align-items: baseline;
-        gap: 0.45rem;
-        cursor: default;
-        user-select: none;
-    }
-    .logo-slashes {
-        font-family: var(--mono);
-        font-size: 1rem;
-        font-weight: 500;
-        color: var(--accent);
-        letter-spacing: -0.04em;
-        opacity: 0.7;
-        transition: opacity 0.2s;
-    }
-    .logo:hover .logo-slashes { opacity: 1; }
-    .logo-name {
-        font-size: 2.1rem;
-        font-weight: 700;
-        letter-spacing: -0.045em;
-        color: var(--text);
-        line-height: 1;
-    }
-    .header-tagline {
-        margin-top: 0.7rem;
-        font-size: 0.78rem;
-        color: var(--text-3);
-        letter-spacing: 0.04em;
-        font-family: var(--mono);
-    }
-    .header-tagline em { color: var(--accent); opacity: 0.6; font-style: normal; }
-
-    /* ── UPLOAD ZONE ────────────────── */
-    .upload-zone {
-        border: 1.5px dashed var(--border-hi);
-        border-radius: var(--r);
-        padding: 3rem 2rem 2.5rem;
-        text-align: center;
-        cursor: pointer;
-        background: var(--surface);
-        position: relative;
-        overflow: hidden;
-        transition: border-color 0.18s, background 0.18s;
-        animation: slideUp 0.65s 0.07s cubic-bezier(0.16,1,0.3,1) both;
-    }
-
-    /* Scanner sweep */
-    .upload-zone::after {
-        content: '';
-        position: absolute;
-        left: 0; right: 0;
-        height: 1.5px;
-        background: linear-gradient(90deg,
-            transparent 0%, var(--accent-mid) 25%,
-            var(--accent) 50%, var(--accent-mid) 75%, transparent 100%);
-        box-shadow: 0 0 10px 3px var(--accent-mid);
-        top: -4px;
-        opacity: 0;
-        transition: opacity 0.25s;
-    }
-    .upload-zone:hover {
-        border-color: var(--accent);
-        border-style: solid;
-        background: var(--surface-2);
-    }
-    .upload-zone:hover::after {
-        opacity: 1;
-        animation: scan 2.4s cubic-bezier(0.4,0,0.6,1) infinite;
-    }
-    .upload-zone.drag-over {
-        border-color: var(--accent);
-        border-style: solid;
-        background: var(--accent-lo);
-    }
-    .upload-zone.drag-over::after {
-        opacity: 1;
-        animation: scan 1.1s linear infinite;
-    }
-    @keyframes scan {
-        0%   { top: -2px; }
-        50%  { top: calc(100% + 2px); }
-        100% { top: -2px; }
-    }
-
-    .doc-icon {
-        display: block;
-        margin: 0 auto 1.4rem;
-        transition: transform 0.2s;
-    }
-    .upload-zone:hover .doc-icon { transform: translateY(-3px); }
-
-    .upload-label {
-        font-size: 0.9rem;
-        color: var(--text-2);
-        line-height: 1.5;
-    }
-    .upload-label strong { color: var(--accent); font-weight: 600; }
-    .upload-hint {
-        margin-top: 0.45rem;
-        font-size: 0.7rem;
-        color: var(--text-3);
-        font-family: var(--mono);
-    }
-
-    /* ── SETTINGS ───────────────────── */
-    .settings {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--r);
-        padding: 1.2rem 1.5rem;
-        margin-top: 0.75rem;
-        display: none;
-        animation: slideDown 0.22s cubic-bezier(0.16,1,0.3,1) both;
-    }
-    .settings.visible { display: block; }
-    .settings-title {
-        font-size: 0.65rem;
-        color: var(--text-3);
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        font-weight: 600;
-        margin-bottom: 0.9rem;
-    }
-    .setting-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 0.65rem;
-    }
-    .setting-label { font-size: 0.8rem; color: var(--text-2); flex-shrink: 0; }
-    .setting-row select {
-        background: var(--surface-2);
-        border: 1px solid var(--border);
-        border-radius: var(--r-sm);
-        padding: 0.3rem 0.65rem;
-        color: var(--text);
-        font-size: 0.75rem;
-        font-family: var(--mono);
-        cursor: pointer;
-        transition: border-color 0.12s;
-        flex: 1; max-width: 260px;
-    }
-    .setting-row select:focus { outline: none; border-color: var(--accent); }
-    .cost-pill {
-        margin-top: 0.8rem;
-        padding: 0.55rem 1rem;
-        background: var(--surface-2);
-        border-radius: 100px;
-        font-size: 0.73rem;
-        color: var(--text-3);
-        font-family: var(--mono);
-        text-align: center;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 0.4rem;
-    }
-    .cost-value { color: var(--green); font-weight: 500; }
-
-    /* ── BUTTONS ────────────────────── */
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        padding: 0.5rem 1.1rem;
-        border-radius: var(--r-sm);
-        border: 1px solid var(--border-hi);
-        background: var(--surface-2);
-        color: var(--text);
-        font-size: 0.8rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: border-color 0.12s, color 0.12s, background 0.12s;
-        text-decoration: none;
-        font-family: var(--font);
-        white-space: nowrap;
-    }
-    .btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lo); }
-    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
-    .btn.primary:hover { background: var(--accent-dim); border-color: var(--accent-dim); color: #fff; }
-    .btn.disabled, .btn:disabled { opacity: 0.3; pointer-events: none; cursor: not-allowed; }
-
-    /* ── JOB CARD ───────────────────── */
-    .job-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--r);
-        padding: 1.35rem 1.5rem;
-        margin-top: 1rem;
-        animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1) both;
-        transition: border-color 0.3s;
-    }
-    .job-card.is-done  { border-color: #4ade8028; }
-    .job-card.is-error { border-color: #f8717128; }
-
-    .job-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 0.9rem;
-    }
-    .job-filename {
-        font-family: var(--mono);
-        font-size: 0.78rem;
-        color: var(--text);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    .job-status {
-        flex-shrink: 0;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        font-size: 0.68rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.07em;
-        padding: 0.2rem 0.65rem;
-        border-radius: 100px;
-    }
-    .status-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-    .job-status.processing { background: var(--accent-lo); color: var(--accent); }
-    .job-status.processing .status-dot { background: var(--accent); animation: pulseDot 1.5s ease-in-out infinite; }
-    .job-status.done  { background: #4ade8015; color: var(--green); }
-    .job-status.done  .status-dot { background: var(--green); }
-    .job-status.error { background: #f8717115; color: var(--red); }
-    .job-status.error .status-dot { background: var(--red); }
-    @keyframes pulseDot {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50%       { opacity: 0.25; transform: scale(0.5); }
-    }
-
-    /* ── PROGRESS ───────────────────── */
-    .progress-bar {
-        height: 3px;
-        background: var(--surface-3);
-        border-radius: 2px;
-        overflow: hidden;
-        margin-bottom: 0.45rem;
-    }
-    .progress-fill {
-        height: 100%;
-        border-radius: 2px;
-        background: var(--accent);
-        transition: width 0.45s cubic-bezier(0.22,1,0.36,1);
-        width: 0%;
-    }
-    .progress-fill.active {
-        background: linear-gradient(90deg,
-            var(--accent-dim) 0%, var(--accent) 35%, #b0c8ff 65%, var(--accent) 100%);
-        background-size: 300% 100%;
-        animation: shimmer 1.6s linear infinite;
-    }
-    @keyframes shimmer {
-        0%   { background-position: 100% center; }
-        100% { background-position: -100% center; }
-    }
-    .progress-meta {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.7rem;
-        color: var(--text-3);
-    }
-    .progress-stage { font-family: var(--mono); color: var(--text-2); }
-
-    /* ── LOG ────────────────────────── */
-    .log {
-        margin-top: 0.75rem;
-        max-height: 130px;
-        overflow-y: auto;
-        font-family: var(--mono);
-        font-size: 0.7rem;
-        line-height: 1.75;
-        color: var(--text-3);
-        background: var(--surface-2);
-        border-radius: var(--r-sm);
-        padding: 0.6rem 0.9rem;
-        scrollbar-width: thin;
-        scrollbar-color: var(--border) transparent;
-    }
-    .log .entry { color: var(--text-3); }
-    .log .entry.latest { color: var(--text-2); }
-    .log-error { color: var(--red) !important; margin-top: 0.2rem; }
-
-    /* ── ACTIONS ────────────────────── */
-    .actions { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-top: 1rem; }
-
-    /* ── TOAST ──────────────────────── */
-    #toast {
-        position: fixed;
-        bottom: 2rem; left: 50%;
-        transform: translateX(-50%) translateY(calc(100% + 2rem));
-        background: var(--surface-3);
-        border: 1px solid var(--border-hi);
-        color: var(--text);
-        padding: 0.55rem 1.3rem;
-        border-radius: 100px;
-        font-size: 0.78rem;
-        font-family: var(--mono);
-        z-index: 99999;
-        opacity: 0;
-        transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.25s;
-        white-space: nowrap;
-        pointer-events: none;
-    }
-    #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-    /* ── ANIMATIONS ─────────────────── */
-    @keyframes slideUp {
-        from { opacity: 0; transform: translateY(16px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-8px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ── MISC ───────────────────────── */
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-    /* ── FOOTER ─────────────────────── */
-    footer {
-        margin-top: 4rem;
-        padding-top: 2rem;
-        border-top: 1px solid var(--border);
-        text-align: center;
-        font-size: 0.75rem;
-        color: var(--text-3);
-        animation: slideUp 0.65s 0.45s cubic-bezier(0.16,1,0.3,1) both;
-    }
-    footer a {
-        color: var(--accent);
-        text-decoration: none;
-        transition: color 0.12s;
-    }
-    footer a:hover { color: var(--accent-dim); text-decoration: underline; }
-    .footer-line { margin: 0.4rem 0; }
-    .footer-heart { display: inline-block; animation: heartbeat 1.2s ease-in-out infinite; }
-    @keyframes heartbeat {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.15); }
-    }
-
-    @media (max-width: 768px) {
-        .header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-    }
-    </style>
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
-    <div id="toast"></div>
-    <div class="container">
+  <div id="root"></div>
+  <div id="toast" class="toast"></div>
 
-        <header class="header">
-            <div>
-                <div class="logo" id="logo" title="Cliquez 5× pour une surprise">
-                    <span class="logo-slashes">//</span>
-                    <span class="logo-name">Palimpsest</span>
-                </div>
-                <p class="header-tagline">
-                    <em>scan</em> → ocr → llm → <em>LaTeX</em>
-                </p>
-            </div>
-            <a href="/jobs.html" class="btn" style="height: fit-content;">Historique →</a>
-        </header>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-        <div class="upload-zone" id="uploadZone">
-            <svg class="doc-icon" width="52" height="60" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 6C4 3.8 5.8 2 8 2H34L50 18V54C50 56.2 48.2 58 46 58H8C5.8 58 4 56.2 4 54V6Z"
-                      fill="var(--surface-3)" stroke="var(--accent)" stroke-width="1.4" stroke-opacity="0.8"/>
-                <path d="M34 2V15C34 16.7 35.3 18 37 18H50"
-                      fill="none" stroke="var(--accent)" stroke-width="1.4" stroke-opacity="0.5"/>
-                <line x1="13" y1="25" x2="41" y2="25" stroke="var(--accent)" stroke-width="1.1" stroke-opacity="0.18"/>
-                <text x="13" y="35" fill="var(--accent)" font-size="7.5" opacity="0.5" font-family="Georgia, serif">∫ f(x) dx = F(x)</text>
-                <line x1="13" y1="42" x2="36" y2="42" stroke="var(--accent)" stroke-width="1" stroke-opacity="0.12"/>
-                <line x1="13" y1="48" x2="28" y2="48" stroke="var(--accent)" stroke-width="1" stroke-opacity="0.08"/>
-            </svg>
-            <div class="upload-label">
-                Déposez votre <strong>PDF</strong> ici — ou cliquez pour parcourir
-            </div>
-            <div class="upload-hint">PDF · scan, manuscrit, STEM</div>
-            <input type="file" id="fileInput" accept=".pdf" style="display:none">
-        </div>
+  <script type="text/babel" src="/assets/components.jsx"></script>
+  <script type="text/babel" src="/assets/workshop.jsx"></script>
+  <script type="text/babel" src="/assets/workshop-mobile.jsx"></script>
 
-        <div class="settings" id="settingsPanel">
-            <div class="settings-title">Configuration</div>
-            <div class="setting-row">
-                <span class="setting-label">Modèle</span>
-                <select id="modelSelect">
-                    <optgroup label="OpenAI">
-                        <option value="o4-mini" selected>o4-mini · ~$0.027/p</option>
-                        <option value="gpt-4.1">GPT-4.1 · ~$0.041/p</option>
-                        <option value="gpt-4o">GPT-4o · ~$0.049/p</option>
-                        <option value="gpt-4.1-mini">GPT-4.1-mini · ~$0.016/p</option>
-                        <option value="gpt-4.1-nano">GPT-4.1-nano · ~$0.012/p</option>
-                    </optgroup>
-                    <optgroup label="Anthropic">
-                        <option value="claude-opus-4-20250514">Claude Opus · ~$0.098/p</option>
-                        <option value="claude-sonnet-4-20250514">Claude Sonnet · ~$0.063/p</option>
-                    </optgroup>
-                    <optgroup label="OpenAI — Premium">
-                        <option value="o1">o1 · ~$0.243/p</option>
-                    </optgroup>
-                </select>
-            </div>
-            <div class="setting-row">
-                <span class="setting-label">Image source</span>
-                <select id="imageSelect">
-                    <option value="true" selected>Oui — meilleure précision</option>
-                    <option value="false">Non — moins cher</option>
-                </select>
-            </div>
-            <div class="setting-row">
-                <span class="setting-label">Mode OCR</span>
-                <select id="engineSelect">
-                    <option value="vision" selected>Vision directe (pas de Mathpix)</option>
-                    <option value="mathpix">Mathpix (+$0.005/p, formules++)</option>
-                </select>
-            </div>
-            <div class="cost-pill">
-                <span>coût estimé</span>
-                <span class="cost-value" id="costValue">—</span>
-            </div>
-        </div>
-
-        <div id="jobsContainer"></div>
-
-        <footer>
-            <div class="footer-line">
-                Made with <span class="footer-heart">❤️</span> by <a href="https://cmrabdu.com" target="_blank">@cmrabdu</a>
-            </div>
-            <div class="footer-line">
-                <a href="https://github.com/cmrabdu/Palimpsest" target="_blank">★ Open Source on GitHub</a>
-            </div>
-            <div class="footer-line">
-                <a href="https://cmrabdu.com" target="_blank">cmrabdu.com</a>
-            </div>
-        </footer>
-    </div>
-
-    <script>
-    'use strict';
-
-    // ── Refs ─────────────────────────────────────────────
-    const uploadZone    = document.getElementById('uploadZone');
-    const settingsPanel = document.getElementById('settingsPanel');
-    const modelSelect   = document.getElementById('modelSelect');
-    const imageSelect   = document.getElementById('imageSelect');
-    const engineSelect  = document.getElementById('engineSelect');
-    const costValue     = document.getElementById('costValue');
-    const jobsContainer = document.getElementById('jobsContainer');
-    const logoEl        = document.getElementById('logo');
-    const toastEl       = document.getElementById('toast');
-
-    // ── Cost table ───────────────────────────────────────
-    const COSTS = {
-        'o4-mini':                  { w: 0.027, n: 0.023 },
-        'gpt-4.1':                  { w: 0.041, n: 0.033 },
-        'gpt-4o':                   { w: 0.049, n: 0.039 },
-        'gpt-4.1-mini':             { w: 0.016, n: 0.015 },
-        'gpt-4.1-nano':             { w: 0.012, n: 0.011 },
-        'claude-opus-4-20250514':   { w: 0.098, n: 0.078 },
-        'claude-sonnet-4-20250514': { w: 0.063, n: 0.051 },
-        'o1':                       { w: 0.243, n: 0.183 },
-    };
-
-    let pendingFile = null;
-    let pendingPageCount = null;
-
-    // ── PDF.js worker ─────────────────────────────────────
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-    async function readPdfPageCount(file) {
-        const buf = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-        return pdf.numPages;
+  <script>
+    // PDF.js worker
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
 
-    // ── Cost estimate ─────────────────────────────────────
-    function updateCostEstimate() {
-        if (!pendingFile) return;
-        const info = COSTS[modelSelect.value];
-        if (!info) return;
-        const sendImg = imageSelect.value === 'true';
-        const engine  = engineSelect.value;
-        if (pendingPageCount === null) {
-            costValue.textContent = '…';
-            return;
+    function showToast(msg, ms = 3200) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(window._toastT);
+      window._toastT = setTimeout(() => el.classList.remove('show'), ms);
+    }
+    window.showToast = showToast;
+  </script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+    // ─── Stage normalization for log lines ───
+    function logEntry(page, total, stage) {
+      const tone = stage.startsWith('rewrite (cached)') || stage.includes('cached') ? 'ok' : 'act';
+      const glyph = stage.includes('cached') ? '✓' : '◐';
+      const s = stage.toLowerCase();
+      let label = 'pipeline';
+      if (s.startsWith('pre'))     label = 'preprocess';
+      else if (s.startsWith('ocr'))     label = 'ocr';
+      else if (s.startsWith('rewrite')) label = 'rewrite';
+      else if (s.startsWith('compile')) label = 'compile';
+      const time = formatTime();
+      return {
+        time, glyph,
+        stage: label,
+        msg: total ? `p${String(page).padStart(2,'0')} · ${stage}` : stage,
+        tone,
+      };
+    }
+
+    function formatTime() {
+      const d = new Date();
+      const m = String(d.getMinutes()).padStart(2, '0');
+      const s = String(d.getSeconds()).padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function App() {
+      // ── job lifecycle state ─────────────────────────────────────
+      const [state, setState]         = useState('idle');         // 'idle' | 'processing' | 'done' | 'error'
+      const [jobId, setJobId]         = useState(null);
+      const [page, setPage]           = useState(0);
+      const [total, setTotal]         = useState(0);
+      const [stage, setStage]         = useState('preprocessing');
+      const [log, setLog]             = useState([{
+        time: '00:00', glyph: '•', stage: 'workshop', msg: 'palimpsest 0.6.2 — ready', tone: '',
+      }, {
+        time: '00:00', glyph: '•', stage: 'workshop', msg: 'awaiting input · drop a PDF in bay 01', tone: '',
+      }]);
+      const [hasPdf, setHasPdf]       = useState(true);
+      const [errorMsg, setErrorMsg]   = useState(null);
+      const [wsConnected, setWsConnected] = useState(false);
+
+      // ── upload-side state ────────────────────────────────────────
+      const [file, setFile]           = useState(null);
+      const [pageCount, setPageCount] = useState(null);
+      const [flash, setFlash]         = useState(false);
+      const [uploading, setUploading] = useState(false);
+
+      const [cfg, setCfg] = useState({
+        model: 'o4-mini',
+        ocr:   'vision',
+        src:   'preserve images',
+      });
+
+      const wsRef = useRef(null);
+
+      const cost = useMemo(() => {
+        if (!pageCount) return null;
+        return window.estimateCost(cfg, pageCount);
+      }, [cfg, pageCount]);
+
+      const canStart = !!file && state === 'idle' && !uploading;
+
+      // ── file picker ──────────────────────────────────────────────
+      const onPick = useCallback(async (f) => {
+        if (!f.name.toLowerCase().endsWith('.pdf')) {
+          showToast('⚠ PDF required');
+          return;
         }
-        const pages = pendingPageCount;
-        const cost  = (pages * ((sendImg ? info.w : info.n) + (engine === 'mathpix' ? 0.005 : 0))).toFixed(2);
-        costValue.textContent = `${pages}p · ${engine === 'vision' ? 'vision' : 'Mathpix'} · ~$${cost}`;
-    }
+        setFile(f);
+        setPageCount(null);
+        setFlash(true);
+        setTimeout(() => setFlash(false), 260);
+        try {
+          const buf = await f.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+          setPageCount(pdf.numPages);
+        } catch (e) {
+          // fallback estimate
+          setPageCount(Math.max(1, Math.round(f.size / 400_000)));
+        }
+      }, []);
 
-    modelSelect.addEventListener('change', updateCostEstimate);
-    imageSelect.addEventListener('change', updateCostEstimate);
-    engineSelect.addEventListener('change', updateCostEstimate);
+      const onClear = useCallback((e) => {
+        e?.stopPropagation();
+        setFile(null);
+        setPageCount(null);
+      }, []);
 
-    // ── Upload events ─────────────────────────────────────
-    uploadZone.addEventListener('click', () => { if (!pendingFile) document.getElementById('fileInput')?.click(); });
-    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
-    uploadZone.addEventListener('dragleave', e => { if (!uploadZone.contains(e.relatedTarget)) uploadZone.classList.remove('drag-over'); });
-    uploadZone.addEventListener('drop', e => {
-        e.preventDefault();
-        uploadZone.classList.remove('drag-over');
-        const f = e.dataTransfer.files[0];
-        if (f && f.name.toLowerCase().endsWith('.pdf')) showSettings(f);
-        else if (f) showToast('⚠ Fichier PDF requis');
-    });
-    document.getElementById('fileInput').addEventListener('change', e => {
-        if (e.target.files[0]) showSettings(e.target.files[0]);
-    });
-
-    // ── Show settings after file pick ─────────────────────
-    function showSettings(file) {
-        pendingFile = file;
-        pendingPageCount = null;
-        settingsPanel.classList.add('visible');
-        updateCostEstimate();
-        readPdfPageCount(file).then(n => {
-            pendingPageCount = n;
-            updateCostEstimate();
-            const pgEl = document.getElementById('pdfPageCount');
-            if (pgEl) pgEl.textContent = `${n} page${n > 1 ? 's' : ''}`;
-        }).catch(() => {
-            pendingPageCount = Math.max(1, Math.round(file.size / 400_000));
-            updateCostEstimate();
-        });
-        const mb = (file.size / 1048576).toFixed(1);
-        uploadZone.innerHTML = `
-            <svg class="doc-icon" width="52" height="60" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 6C4 3.8 5.8 2 8 2H34L50 18V54C50 56.2 48.2 58 46 58H8C5.8 58 4 56.2 4 54V6Z"
-                      fill="var(--surface-3)" stroke="var(--green)" stroke-width="1.4"/>
-                <path d="M34 2V15C34 16.7 35.3 18 37 18H50" fill="none" stroke="var(--green)" stroke-width="1.4" stroke-opacity="0.5"/>
-                <polyline points="15,32 22,40 37,22" fill="none" stroke="var(--green)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <div class="upload-label" style="margin-bottom:1.35rem">
-                <strong style="color:var(--text)">${escHtml(file.name)}</strong><br>
-                <span style="color:var(--text-3);font-size:0.78rem;font-family:var(--mono)"><span id="pdfPageCount">…</span> · ${mb} MB</span>
-            </div>
-            <button class="btn primary" id="startBtn">Lancer le pipeline &rarr;</button>
-        `;
-        uploadZone.style.cursor = 'default';
-        document.getElementById('startBtn').addEventListener('click', e => { e.stopPropagation(); startProcessing(); });
-    }
-
-    // ── Start job ─────────────────────────────────────────
-    async function startProcessing() {
-        if (!pendingFile) return;
-        const btn = document.getElementById('startBtn');
-        if (btn) { btn.disabled = true; btn.textContent = 'Envoi en cours…'; }
+      // ── start pipeline ───────────────────────────────────────────
+      const onStart = useCallback(async () => {
+        if (!file) return;
+        setUploading(true);
         const fd = new FormData();
-        fd.append('file', pendingFile);
-        fd.append('model', modelSelect.value);
-        fd.append('send_image', imageSelect.value);
-        fd.append('engine', engineSelect.value);
+        fd.append('file', file);
+        fd.append('model', cfg.model);
+        fd.append('send_image', cfg.src === 'preserve images' ? 'true' : 'false');
+        fd.append('engine', cfg.ocr);
         let data;
         try {
-            const res = await fetch('/api/upload', { method: 'POST', body: fd });
-            data = await res.json();
-        } catch { showToast('❌ Erreur réseau'); if (btn) btn.disabled = false; return; }
-        if (data.error) { showToast('❌ ' + data.error); if (btn) btn.disabled = false; return; }
-        createJobCard(data.job_id, data.filename);
-        connectWebSocket(data.job_id);
-        resetUploadZone();
-    }
-
-    // ── Reset upload zone ─────────────────────────────────
-    function resetUploadZone() {
-        pendingFile = null;
-        settingsPanel.classList.remove('visible');
-        uploadZone.style.cursor = 'pointer';
-        uploadZone.innerHTML = `
-            <svg class="doc-icon" width="52" height="60" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 6C4 3.8 5.8 2 8 2H34L50 18V54C50 56.2 48.2 58 46 58H8C5.8 58 4 56.2 4 54V6Z"
-                      fill="var(--surface-3)" stroke="var(--accent)" stroke-width="1.4" stroke-opacity="0.8"/>
-                <path d="M34 2V15C34 16.7 35.3 18 37 18H50" fill="none" stroke="var(--accent)" stroke-width="1.4" stroke-opacity="0.5"/>
-                <line x1="13" y1="25" x2="41" y2="25" stroke="var(--accent)" stroke-width="1.1" stroke-opacity="0.18"/>
-                <text x="13" y="35" fill="var(--accent)" font-size="7.5" opacity="0.5" font-family="Georgia, serif">&#x222B; f(x) dx = F(x)</text>
-                <line x1="13" y1="42" x2="36" y2="42" stroke="var(--accent)" stroke-width="1" stroke-opacity="0.12"/>
-                <line x1="13" y1="48" x2="28" y2="48" stroke="var(--accent)" stroke-width="1" stroke-opacity="0.08"/>
-            </svg>
-            <div class="upload-label">Déposez votre <strong>PDF</strong> ici — ou cliquez pour parcourir</div>
-            <div class="upload-hint">PDF · scan, manuscrit, STEM</div>
-            <input type="file" id="fileInput" accept=".pdf" style="display:none">
-        `;
-        document.getElementById('fileInput').addEventListener('change', e => { if (e.target.files[0]) showSettings(e.target.files[0]); });
-    }
-
-    // ── Job card ──────────────────────────────────────────
-    function createJobCard(jobId, filename) {
-        const card = document.createElement('div');
-        card.className = 'job-card';
-        card.id = `job-${jobId}`;
-        card.innerHTML = `
-            <div class="job-header">
-                <span class="job-filename">${escHtml(filename)}</span>
-                <span class="job-status processing" id="status-${jobId}">
-                    <span class="status-dot"></span>Processing
-                </span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill active" id="fill-${jobId}"></div>
-            </div>
-            <div class="progress-meta">
-                <span id="counter-${jobId}">Démarrage…</span>
-                <span class="progress-stage" id="stage-${jobId}"></span>
-            </div>
-            <div class="log" id="log-${jobId}"></div>
-            <div class="actions" id="actions-${jobId}" style="display:none"></div>
-        `;
-        jobsContainer.prepend(card);
-    }
-
-    function updateProgress(jobId, page, total, stage) {
-        const pct = total > 0 ? Math.round(page / total * 100) : 8;
-        const fill    = document.getElementById(`fill-${jobId}`);
-        const counter = document.getElementById(`counter-${jobId}`);
-        const stageEl = document.getElementById(`stage-${jobId}`);
-        const log     = document.getElementById(`log-${jobId}`);
-        if (fill)    fill.style.width = `${pct}%`;
-        if (counter) counter.textContent = `${page} / ${total} pages`;
-        if (stageEl) stageEl.textContent = stage;
-        if (log) {
-            const prev = log.querySelector('.entry.latest');
-            if (prev) prev.classList.remove('latest');
-            const entry = document.createElement('div');
-            entry.className = 'entry latest';
-            entry.textContent = `[${page}/${total}] ${stage}`;
-            log.appendChild(entry);
-            log.scrollTop = log.scrollHeight;
+          const res = await fetch('/api/upload', { method: 'POST', body: fd });
+          data = await res.json();
+        } catch (err) {
+          showToast('❌ network error');
+          setUploading(false);
+          return;
         }
-    }
-
-    function markDone(jobId, hasPdf) {
-        const card    = document.getElementById(`job-${jobId}`);
-        const status  = document.getElementById(`status-${jobId}`);
-        const fill    = document.getElementById(`fill-${jobId}`);
-        const actions = document.getElementById(`actions-${jobId}`);
-        if (card)   card.classList.add('is-done');
-        if (status) { status.innerHTML = '<span class="status-dot"></span>Done'; status.className = 'job-status done'; }
-        if (fill)   { fill.style.width = '100%'; fill.classList.remove('active'); fill.style.background = 'var(--green)'; }
-        if (actions) {
-            actions.style.display = 'flex';
-            if (hasPdf) {
-                actions.innerHTML = `
-                    <a class="btn primary" href="/api/jobs/${jobId}/download?fmt=pdf">&darr; Télécharger PDF</a>
-                    <a class="btn" href="/api/jobs/${jobId}/download?fmt=tex">&darr; .tex</a>
-                `;
-            } else {
-                actions.innerHTML = `<a class="btn" href="/api/jobs/${jobId}/download?fmt=tex">&darr; Télécharger .tex</a>`;
-                const log = document.getElementById(`log-${jobId}`);
-                if (log) {
-                    const w = document.createElement('div');
-                    w.className = 'entry log-error';
-                    w.textContent = '⚠ PDF non généré — compilez le .tex sur Overleaf';
-                    log.appendChild(w); log.scrollTop = log.scrollHeight;
-                }
-            }
+        if (data.error) {
+          showToast('❌ ' + data.error);
+          setUploading(false);
+          return;
         }
-    }
+        setUploading(false);
+        startTracking(data.job_id, file.name);
+      }, [file, cfg]);
 
-    function markError(jobId, message) {
-        const card   = document.getElementById(`job-${jobId}`);
-        const status = document.getElementById(`status-${jobId}`);
-        const fill   = document.getElementById(`fill-${jobId}`);
-        if (card)   card.classList.add('is-error');
-        if (status) { status.innerHTML = '<span class="status-dot"></span>Erreur'; status.className = 'job-status error'; }
-        if (fill)   fill.classList.remove('active');
-        const log = document.getElementById(`log-${jobId}`);
-        if (log) {
-            const e = document.createElement('div');
-            e.className = 'entry log-error';
-            e.textContent = message;
-            log.appendChild(e); log.scrollTop = log.scrollHeight;
-        }
-    }
-
-    // ── WebSocket ─────────────────────────────────────────
-    function connectWebSocket(jobId) {
+      // ── connect to a job (new or resumed) ────────────────────────
+      const startTracking = useCallback((id, filename) => {
+        setJobId(id);
+        setState('processing');
+        setPage(0);
+        setTotal(pageCount || 0);
+        setStage('preprocessing');
+        setErrorMsg(null);
+        setLog([{
+          time: formatTime(), glyph: '•', stage: 'open',
+          msg: `${filename || id} — ${pageCount ? `${pageCount} pages` : 'starting'}`,
+          tone: '',
+        }]);
+        // close any prior socket
+        if (wsRef.current) { try { wsRef.current.close(); } catch {} }
         const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const ws = new WebSocket(`${proto}//${location.host}/ws/${jobId}`);
+        const ws = new WebSocket(`${proto}//${location.host}/ws/${id}`);
+        wsRef.current = ws;
+        ws.onopen = () => setWsConnected(true);
+        ws.onclose = () => setWsConnected(false);
+        ws.onerror = () => setWsConnected(false);
         ws.onmessage = ({ data }) => {
-            const d = JSON.parse(data);
-            if      (d.type === 'progress') updateProgress(jobId, d.page, d.total, d.stage);
-            else if (d.type === 'done')     { markDone(jobId, d.has_pdf !== false); ws.close(); }
-            else if (d.type === 'error')    { markError(jobId, d.message); ws.close(); }
-            else if (d.type === 'status') {
-                if      (d.status === 'done')  markDone(jobId, d.has_pdf !== false);
-                else if (d.status === 'error') markError(jobId, d.error);
-                else if (d.progress)           updateProgress(jobId, d.progress, d.total, d.stage);
+          let d; try { d = JSON.parse(data); } catch { return; }
+          if (d.type === 'progress') {
+            setPage(d.page);
+            setTotal(d.total);
+            setStage(d.stage || 'preprocessing');
+            setLog(L => [...L, logEntry(d.page, d.total, d.stage || '')]);
+          } else if (d.type === 'done') {
+            setState('done');
+            setHasPdf(d.has_pdf !== false);
+            setLog(L => [...L, {
+              time: formatTime(), glyph: '✓', stage: 'done',
+              msg: d.has_pdf === false ? '.tex ready — pdf compile failed' : 'pdf + .tex ready',
+              tone: 'ok',
+            }]);
+            try { ws.close(); } catch {}
+          } else if (d.type === 'error') {
+            setState('error');
+            setErrorMsg(d.message || 'pipeline halted');
+            setLog(L => [...L, {
+              time: formatTime(), glyph: '!', stage: 'halted',
+              msg: d.message || 'pipeline halted',
+              tone: 'err',
+            }]);
+            try { ws.close(); } catch {}
+          } else if (d.type === 'status') {
+            // initial snapshot when reconnecting
+            if (d.filename) {
+              // we may not have the file blob, but we know the filename
+              setFile(f => f || { name: d.filename, size: 0 });
             }
+            if (d.total) setTotal(d.total);
+            if (d.progress) setPage(d.progress);
+            if (d.stage) setStage(d.stage);
+            if (d.status === 'done') {
+              setState('done');
+              setHasPdf(d.has_pdf !== false);
+            } else if (d.status === 'error') {
+              setState('error');
+              setErrorMsg(d.error || 'pipeline halted');
+            } else if (d.status === 'processing' || d.status === 'queued') {
+              setState('processing');
+            }
+          }
         };
-        ws.onerror = () => markError(jobId, 'Connexion WebSocket perdue');
-    }
+      }, [pageCount]);
 
-    // ── Toast ─────────────────────────────────────────────
-    let _toastTimer;
-    function showToast(msg, ms = 3200) {
-        toastEl.textContent = msg;
-        toastEl.classList.add('show');
-        clearTimeout(_toastTimer);
-        _toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms);
-    }
+      // ── resume in-flight job from URL ?job=… ─────────────────────
+      useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const id = params.get('job');
+        if (id) {
+          // optimistic — pull latest status
+          fetch(`/api/jobs/${id}`)
+            .then(r => r.json())
+            .then(j => {
+              if (!j || j.error) {
+                showToast('⚠ job ' + id + ' not found');
+                return;
+              }
+              startTracking(id, j.filename);
+              // sync cfg from server-side record
+              if (j.model)  setCfg(c => ({ ...c, model: j.model }));
+              if (j.engine) setCfg(c => ({ ...c, ocr: j.engine }));
+              setCfg(c => ({ ...c, src: j.send_image === false ? 'text only' : 'preserve images' }));
+            })
+            .catch(() => showToast('⚠ cannot resume job'));
+        }
+        return () => { if (wsRef.current) { try { wsRef.current.close(); } catch {} } };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, []);
 
-    // ── XSS guard ─────────────────────────────────────────
-    function escHtml(s) {
-        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
+      // ── theme: parchment via konami code ─────────────────────────
+      useEffect(() => {
+        const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+        let ki = 0, pn = false;
+        const onKey = (e) => {
+          ki = e.key === KONAMI[ki] ? ki + 1 : (e.key === KONAMI[0] ? 1 : 0);
+          if (ki === KONAMI.length) {
+            ki = 0; pn = !pn;
+            document.documentElement.setAttribute('data-theme', pn ? 'parchment' : 'default');
+            const tc = document.querySelector('meta[name="theme-color"]');
+            if (tc) tc.content = pn ? '#1c1409' : '#f1e7d0';
+            showToast(pn ? '📜 Parchment mode' : '◆ Default mode');
+          }
+        };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+      }, []);
 
-    // ════════════════════════════════════════════
-    //  EASTER EGGS
-    // ════════════════════════════════════════════
-
-    // 1. Logo click ×5 → console poem
-    let _lc = 0, _lt;
-    logoEl.addEventListener('click', () => {
-        _lc++;
-        clearTimeout(_lt);
-        _lt = setTimeout(() => { _lc = 0; }, 2200);
-        if (_lc >= 5) {
-            _lc = 0;
+      // ── logo click ×5 → secret poem ──────────────────────────────
+      useEffect(() => {
+        let lc = 0, lt;
+        const onClick = (e) => {
+          if (!e.target.closest('#logo')) return;
+          lc++;
+          clearTimeout(lt);
+          lt = setTimeout(() => { lc = 0; }, 2200);
+          if (lc >= 5) {
+            lc = 0;
             console.log(
-                '%c\n  \\documentclass[secret]{palimpsest}\n  \\begin{poem}\n    Ici, sous chaque glyphe,\n    gît l\'encre d\'un autre texte.\n    Tu lis le présent —\n    mais le passé saigne à travers.\n  \\end{poem}\n',
-                'color:#6c8cff;font-family:monospace;font-size:11px;line-height:1.7'
+              '%c\n  \\documentclass[secret]{palimpsest}\n  \\begin{poem}\n    Beneath each glyph lies\n    the ink of another text.\n    You read the present —\n    but the past bleeds through.\n  \\end{poem}\n',
+              'color:#5c7bff;font-family:monospace;font-size:11px;line-height:1.7'
             );
-            showToast('📜 Regarde dans la console…', 4000);
-        }
-    });
+            showToast('📜 look in the console…', 4000);
+          }
+        };
+        document.addEventListener('click', onClick);
+        return () => document.removeEventListener('click', onClick);
+      }, []);
 
-    // 2. Konami code → Mode Parchemin
-    const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
-    let _ki = 0, _pn = false;
-    document.addEventListener('keydown', e => {
-        _ki = e.key === KONAMI[_ki] ? _ki + 1 : (e.key === KONAMI[0] ? 1 : 0);
-        if (_ki === KONAMI.length) {
-            _ki = 0; _pn = !_pn;
-            document.documentElement.setAttribute('data-mode', _pn ? 'parchemin' : 'dark');
-            document.querySelector('meta[name="theme-color"]').content = _pn ? '#f0e6cc' : '#080810';
-            showToast(_pn ? '📜 Mode Parchemin activé' : '💻 Mode sombre rétabli', 4000);
-        }
-    });
+      const shared = {
+        state, page, total, currentStage: stage, log, jobId,
+        file, pageCount, cfg, setCfg, cost, wsConnected, hasPdf, errorMsg,
+        onPick, onClear, onStart, flash, canStart, uploading,
+      };
 
-    </script>
+      return (
+        <>
+          <Workshop {...shared} />
+          <MobileWorkshop {...shared} />
+        </>
+      );
+    }
+
+    // wait for Babel-compiled scripts to register globals
+    function boot() {
+      if (!window.Workshop || !window.MobileWorkshop) {
+        return setTimeout(boot, 30);
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    }
+    boot();
+  </script>
 </body>
 </html>

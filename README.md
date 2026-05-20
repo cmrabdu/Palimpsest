@@ -1,14 +1,14 @@
 <div align="center">
 
-# Palimpsest
+<img src="web/brand/logo-transparent.svg" alt="Palimpsest" width="520">
 
 **Turn your professors' ancient scanned PDFs into clean, modern LaTeX documents.**
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-yellow.svg)](https://python.org)
 
-[Getting Started](#getting-started) · [How It Works](#how-it-works) · [Web UI](#web-interface) · [Cost](#cost-estimate) · [Changelog](CHANGELOG.md)
+[Getting Started](#getting-started) · [How It Works](#how-it-works) · [Web UI](#web-interface) · [Cost](#cost-estimate) · [Brand kit](web/brand) · [Changelog](CHANGELOG.md)
 
 </div>
 
@@ -47,7 +47,9 @@ This is a **free, open-source tool made by a student, for students.** No profit,
 - **LaTeX output** — proper `\section{}`, `\begin{equation}`, `\begin{tikzpicture}` — not some Markdown approximation
 - **Inter-page memory** — variables and notation defined on page 3 are remembered on page 50
 - **Fault-tolerant** — page-by-page caching; resume interrupted runs from where they stopped
-- **Web interface** — drag & drop a PDF, watch real-time progress, download the result
+- **Web interface** — drag & drop a PDF, watch real-time progress, download the **PDF** or **.tex**
+- **Clean cover page** — every output ships with a typeset titlepage (title, subject, author, Palimpsest credit) so you can hand it in as-is
+- **LaTeX sanitizer** — post-pass scrubs the most common Overleaf-breakers (stray ```` ``` ```` fences, banned `\dv`/`\pdv`/`\qty`, leaking `\begin{paragraph}`, unbalanced `$`, orphan TikZ, bare `-` lists)
 - **Job history** — all jobs are persisted to disk; retrieve previous documents even after a page refresh
 - **Multi-model** — supports 8 models across OpenAI and Anthropic (o4-mini is the sweet spot)
 - **No Mathpix needed** — vision-direct mode lets the LLM do OCR straight from images (free, no signup)

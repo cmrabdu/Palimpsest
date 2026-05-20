@@ -19,6 +19,7 @@ from src.merge import merge_pages_latex, save_latex
 from src.ocr_mathpix import ocr_page
 from src.preprocess import preprocess
 from src.rewrite import rewrite_page, detect_provider, Provider
+from src.sanitize import sanitize_latex, slugify
 
 import httpx
 
@@ -221,7 +222,12 @@ async def run_pipeline(
             if last_err is not None:
                 raise last_err
 
-            rewritten[idx] = markdown
+            # Post-pass: scrub known Overleaf-breaking patterns before merge.
+            cleaned, notes = sanitize_latex(markdown)
+            if notes:
+                logger.info(f"Page {idx + 1} sanitizer: {', '.join(notes)}")
+            rewritten[idx] = cleaned
+            markdown = cleaned  # cache the cleaned version
 
             # Update context
             if ctx_yaml:
@@ -247,16 +253,30 @@ async def run_pipeline(
     # ── Step 5: Merge & export ────────────────────────
     console.print("\n[bold cyan]▸ Assembling LaTeX document[/]...")
     title = context.document_title or pdf.stem.replace("_", " ").title()
+    subtitle = context.document_subtitle
+    if not subtitle and context.discipline:
+        subtitle = f"Cours de {context.discipline}"
+    author = context.author
+    blurb_enabled = config.get("output", {}).get("include_palimpsest_blurb", True)
+
+    # Slug the title for a clean output filename (falls back to pdf.stem)
+    out_slug = slugify(title, fallback=pdf.stem)
 
     if do_merge:
-        final_tex = merge_pages_latex(rewritten, title=title)
-        tex_path = save_latex(final_tex, output_dir / f"{pdf.stem}.tex")
+        final_tex = merge_pages_latex(
+            rewritten,
+            title=title,
+            author=author,
+            subtitle=subtitle,
+            include_blurb=blurb_enabled,
+        )
+        tex_path = save_latex(final_tex, output_dir / f"{out_slug}.tex")
         console.print(f"  [green]✓[/] LaTeX: {tex_path}")
 
         # Always compile to PDF
         console.print("[bold cyan]▸ Compiling PDF[/] (xelatex)...")
         try:
-            pdf_out = latex_to_pdf(tex_path, output_dir / f"{pdf.stem}.pdf")
+            pdf_out = latex_to_pdf(tex_path, output_dir / f"{out_slug}.pdf")
             console.print(f"  [green]✓[/] PDF: {pdf_out}")
             final_output = pdf_out
         except RuntimeError as e:

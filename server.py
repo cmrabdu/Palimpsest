@@ -21,6 +21,20 @@ BASE_DIR = Path(__file__).resolve().parent
 
 app = FastAPI(title="Palimpsest", version="0.1.0")
 
+# Static assets (CSS, JSX) under /assets
+app.mount(
+    "/assets",
+    StaticFiles(directory=str(Path(__file__).resolve().parent / "web" / "assets")),
+    name="assets",
+)
+
+# Brand kit (logos, favicons, og-image, banner) under /brand
+app.mount(
+    "/brand",
+    StaticFiles(directory=str(Path(__file__).resolve().parent / "web" / "brand")),
+    name="brand",
+)
+
 # ── State ────────────────────────────────────────────────
 
 jobs: dict[str, dict] = {}  # job_id -> {status, progress, total, stage, output_path, error, timestamp}
@@ -76,9 +90,20 @@ async def jobs_page():
     return (BASE_DIR / "web/jobs.html").read_text(encoding="utf-8")
 
 
+@app.get("/brand.html", response_class=HTMLResponse)
+async def brand_page():
+    return (BASE_DIR / "web/brand.html").read_text(encoding="utf-8")
+
+
 @app.get("/favicon.svg")
-async def favicon():
-    return FileResponse(BASE_DIR / "web/favicon.svg", media_type="image/svg+xml")
+async def favicon_svg():
+    return FileResponse(BASE_DIR / "web/brand/favicon.svg", media_type="image/svg+xml")
+
+
+@app.get("/favicon.ico")
+async def favicon_ico():
+    # No .ico is shipped; fall back to the 32px PNG (browsers accept it).
+    return FileResponse(BASE_DIR / "web/brand/favicon-32.png", media_type="image/png")
 
 
 @app.post("/api/upload")
@@ -170,6 +195,30 @@ async def _process_job(job_id: str, pdf_path: str, model: str = "o4-mini", send_
         await broadcast(job_id, {"type": "error", "message": str(e)})
 
 
+@app.get("/api/jobs/list")
+async def list_jobs(limit: int = 50, status: str = None):
+    """List all jobs sorted by timestamp (newest first)."""
+    job_list = sorted(
+        jobs.values(),
+        key=lambda x: x.get("timestamp", ""),
+        reverse=True
+    )
+    if status:
+        job_list = [j for j in job_list if j.get("status") == status]
+    if limit:
+        job_list = job_list[:limit]
+    return {"jobs": job_list, "total": len(job_list)}
+
+
+@app.get("/api/jobs/latest")
+async def latest_job():
+    """Get the most recent job (by timestamp)."""
+    if not jobs:
+        return {"error": "No jobs found."}
+    latest = max(jobs.values(), key=lambda x: x.get("timestamp", ""))
+    return latest
+
+
 @app.get("/api/jobs/{job_id}")
 async def get_job(job_id: str):
     """Get current status of a job."""
@@ -214,30 +263,6 @@ async def download_result(job_id: str, fmt: str = "auto"):
     if tex_path.exists():
         return FileResponse(tex_path, filename=tex_path.name, media_type="application/x-tex")
     return {"error": "Output file not found."}
-
-
-@app.get("/api/jobs/list")
-async def list_jobs(limit: int = 50, status: str = None):
-    """List all jobs sorted by timestamp (newest first)."""
-    job_list = sorted(
-        jobs.values(),
-        key=lambda x: x.get("timestamp", ""),
-        reverse=True
-    )
-    if status:
-        job_list = [j for j in job_list if j.get("status") == status]
-    if limit:
-        job_list = job_list[:limit]
-    return {"jobs": job_list, "total": len(job_list)}
-
-
-@app.get("/api/jobs/latest")
-async def latest_job():
-    """Get the most recent job (by timestamp)."""
-    if not jobs:
-        return {"error": "No jobs found."}
-    latest = max(jobs.values(), key=lambda x: x.get("timestamp", ""))
-    return latest
 
 
 @app.websocket("/ws/{job_id}")

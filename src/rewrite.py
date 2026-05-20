@@ -39,6 +39,9 @@ RÈGLES DE FORMATAGE — output = corps LaTeX UNIQUEMENT (sans \\documentclass n
 - Vecteurs : \\vec{F}, produit vectoriel \\times, norme \\|...\\|
 - Dérivées : \\frac{d}{dt}, \\frac{\\partial}{\\partial x}, \\dot{x}, \\ddot{x}
 - INTERDIT : \\dv{}{}, \\pdv{}{}, \\qty{} — package physics absent du préambule
+- INTERDIT : blocs ```latex / ``` / ```tex — réponse = LaTeX brut uniquement
+- INTERDIT : \\begin{paragraph}{...}...\\end{paragraph} — c'est une commande : \\paragraph{...}
+- INTERDIT : \\maketitle, \\tableofcontents, \\begin{document} — la page de garde est gérée par le merger
 
 HIÉRARCHIE DES SECTIONS — RÈGLE STRICTE :
 - \\chapter{} → si la source dit « Chapitre N », « Chapter N », ou si un en-tête de partie/chapitre est clairement isolé (ex : « DEUXIÈME PARTIE — LA STATIQUE »)
@@ -128,6 +131,10 @@ Format de sortie STRICT :
 3. Un bloc YAML au format EXACT suivant :
 
 ```yaml
+document_title: "Statique — Mécanique du solide"
+document_subtitle: "Cours de mécanique générale"
+discipline: "physique"
+author: "Prof. N. Exemple"
 chapter_number: 3
 chapter_title: "Titre du chapitre"
 current_section: "3.4 Titre de la section"
@@ -139,6 +146,12 @@ inconsistencies_detected: []
 ```
 
 Champs obligatoires : chapter_number, current_section.
+Champs PRIORITAIRES (à remplir dès qu'ils sont déductibles, en général dès la page 1) :
+- document_title : titre exact du cours / polycopié — sans numéro de chapitre, sans nom de l'étudiant
+- document_subtitle : sous-titre éventuel (ex : "Cours de mécanique des fluides")
+- discipline : mot court — "physique", "mathématiques", "chimie", "mécanique", "ingénierie", etc.
+- author : nom de l'enseignant ou de l'auteur si visible sur la page
+Si l'un de ces champs reste inconnu, l'omettre — ne PAS inventer.
 Champs optionnels : chapter_title, new_variables, new_conventions, inconsistencies_detected.
 Ne pas inclure de commentaires méta. Juste le LaTeX + le bloc contexte."""
 
@@ -176,6 +189,9 @@ RÈGLES DE FORMATAGE — output = corps LaTeX UNIQUEMENT (sans \\documentclass n
 - Vecteurs : \\vec{F}, produit vectoriel \\times, norme \\|...\\|
 - Dérivées : \\frac{d}{dt}, \\frac{\\partial}{\\partial x}, \\dot{x}, \\ddot{x}
 - INTERDIT : \\dv{}{}, \\pdv{}{}, \\qty{} — package physics absent du préambule
+- INTERDIT : blocs ```latex / ``` / ```tex — réponse = LaTeX brut uniquement
+- INTERDIT : \\begin{paragraph}{...}...\\end{paragraph} — c'est une commande : \\paragraph{...}
+- INTERDIT : \\maketitle, \\tableofcontents, \\begin{document} — la page de garde est gérée par le merger
 
 HIÉRARCHIE DES SECTIONS — RÈGLE STRICTE :
 - \\chapter{} → si la source dit « Chapitre N », « Chapter N », ou si un en-tête de partie/chapitre est clairement isolé (ex : « DEUXIÈME PARTIE — LA STATIQUE »)
@@ -265,6 +281,10 @@ Format de sortie STRICT :
 3. Un bloc YAML au format EXACT suivant :
 
 ```yaml
+document_title: "Statique — Mécanique du solide"
+document_subtitle: "Cours de mécanique générale"
+discipline: "physique"
+author: "Prof. N. Exemple"
 chapter_number: 3
 chapter_title: "Titre du chapitre"
 current_section: "3.4 Titre de la section"
@@ -276,6 +296,12 @@ inconsistencies_detected: []
 ```
 
 Champs obligatoires : chapter_number, current_section.
+Champs PRIORITAIRES (à remplir dès qu'ils sont déductibles, en général dès la page 1) :
+- document_title : titre exact du cours / polycopié — sans numéro de chapitre, sans nom de l'étudiant
+- document_subtitle : sous-titre éventuel (ex : "Cours de mécanique des fluides")
+- discipline : mot court — "physique", "mathématiques", "chimie", "mécanique", "ingénierie", etc.
+- author : nom de l'enseignant ou de l'auteur si visible sur la page
+Si l'un de ces champs reste inconnu, l'omettre — ne PAS inventer.
 Champs optionnels : chapter_title, new_variables, new_conventions, inconsistencies_detected.
 Ne pas inclure de commentaires méta. Juste le LaTeX + le bloc contexte."""
 

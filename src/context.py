@@ -8,6 +8,9 @@ class DocumentContext:
     """Accumulated context passed to Claude for inter-page coherence."""
 
     document_title: str = ""
+    document_subtitle: str = ""   # e.g. "Cours de mécanique des fluides"
+    discipline: str = ""          # detected subject: physique, math, etc.
+    author: str = ""              # detected author if any
     current_chapter: str = ""
     current_section: str = ""
     chapter_number: int = 0
@@ -55,7 +58,13 @@ class DocumentContext:
             return
 
         if "document_title" in data and data["document_title"]:
-            self.document_title = data["document_title"]
+            self.document_title = str(data["document_title"]).strip()
+        if "document_subtitle" in data and data["document_subtitle"]:
+            self.document_subtitle = str(data["document_subtitle"]).strip()
+        if "discipline" in data and data["discipline"]:
+            self.discipline = str(data["discipline"]).strip()
+        if "author" in data and data["author"]:
+            self.author = str(data["author"]).strip()
         if "chapter_number" in data and data["chapter_number"]:
             try:
                 self.chapter_number = int(data["chapter_number"])

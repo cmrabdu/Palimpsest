@@ -12,3 +12,6 @@ build/
 venv/
 *.pdf
 *.tex
+
+# Editor / agent local config
+.claude/

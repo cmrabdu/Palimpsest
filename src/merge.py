@@ -1,9 +1,15 @@
 """Page merger and LaTeX document assembly."""
 
+from __future__ import annotations
+
 import logging
+from datetime import date
 from pathlib import Path
 
+from .sanitize import sanitize_title
+
 logger = logging.getLogger(__name__)
+
 
 LATEX_PREAMBLE = r"""\documentclass[12pt,a4paper]{report}
 
@@ -50,7 +56,12 @@ LATEX_PREAMBLE = r"""\documentclass[12pt,a4paper]{report}
 \usepackage{array}
 \usepackage{tabularx}
 \usepackage{longtable}
-\usepackage{adjustbox}
+\IfFileExists{adjustbox.sty}{\usepackage{adjustbox}}{%
+  % adjustbox absent (BasicTeX) — provide a no-op stub so prompts that wrap
+  % a tabular in \begin{adjustbox}{max width=\textwidth}...\end{adjustbox}
+  % still compile.
+  \newenvironment{adjustbox}[1]{}{}%
+}
 
 % Flottants
 \usepackage{float}
@@ -61,50 +72,118 @@ LATEX_PREAMBLE = r"""\documentclass[12pt,a4paper]{report}
 \usepackage{xcolor}
 \usepackage{enumitem}
 \usepackage{hyperref}
-\hypersetup{colorlinks=true, linkcolor=blue!70!black, urlcolor=blue}
+\hypersetup{colorlinks=true, linkcolor=blue!70!black, urlcolor=blue!70!black}
 
 % Numérotation des équations/figures/tableaux par chapitre
 \numberwithin{equation}{chapter}
 \numberwithin{figure}{chapter}
 \numberwithin{table}{chapter}
 
+% Métadonnées Palimpsest
+\newcommand{\palimpsestversion}{vol. iii}
 """
 
 
-def merge_pages_latex(pages: list[str], title: str = "", author: str = "") -> str:
+# Default Palimpsest cover-page blurb. Inserted after the title block, before
+# the table of contents. The text is intentionally generic — we do not assume
+# the source is a physics course.
+PALIMPSEST_BLURB = (
+    r"Ce document est une retranscription et mise au propre d'un support "
+    r"original difficilement lisible. Le texte, les équations et les schémas "
+    r"ont été repris et structurés à l'aide de \textbf{Palimpsest}, un "
+    r"logiciel open source combinant OCR, contexte LLM et reconnaissance "
+    r"visuelle par OpenCV, développé par Abdullah Camur."
+)
+
+PALIMPSEST_URL = "https://github.com/cmrabdu/Palimpsest"
+
+
+def _titlepage(
+    title: str,
+    subtitle: str = "",
+    author: str = "",
+    include_blurb: bool = True,
+) -> str:
+    """Build a clean titlepage block with the Palimpsest blurb."""
+    safe_title = sanitize_title(title) or "Document"
+    safe_subtitle = sanitize_title(subtitle)
+    safe_author = sanitize_title(author)
+
+    lines: list[str] = []
+    lines.append(r"\begin{titlepage}")
+    lines.append(r"\centering")
+    lines.append(r"\vspace*{2cm}")
+    lines.append(r"{\Large\itshape Retranscription et mise au propre\par}")
+    lines.append(r"\vspace{1.5cm}")
+    lines.append(r"{\Huge\bfseries " + safe_title + r"\par}")
+    if safe_subtitle:
+        lines.append(r"\vspace{0.6cm}")
+        lines.append(r"{\Large\itshape " + safe_subtitle + r"\par}")
+    lines.append(r"\vspace{2.5cm}")
+    if safe_author:
+        lines.append(r"{\large " + safe_author + r"\par}")
+        lines.append(r"\vspace{0.4cm}")
+    lines.append(r"{\small " + date.today().strftime("%d %B %Y") + r"\par}")
+
+    if include_blurb:
+        lines.append(r"\vfill")
+        lines.append(r"\begin{minipage}{0.78\textwidth}")
+        lines.append(r"\small\itshape")
+        lines.append(PALIMPSEST_BLURB)
+        lines.append(r"\par\vspace{0.6em}")
+        lines.append(
+            r"\normalfont\small Logiciel : \textbf{Palimpsest} "
+            r"\textendash{} \url{" + PALIMPSEST_URL + r"}"
+        )
+        lines.append(r"\end{minipage}")
+
+    lines.append(r"\vspace{1cm}")
+    lines.append(r"\end{titlepage}")
+    return "\n".join(lines) + "\n\n"
+
+
+def merge_pages_latex(
+    pages: list[str],
+    title: str = "",
+    author: str = "",
+    subtitle: str = "",
+    include_blurb: bool = True,
+) -> str:
     """Assemble LaTeX body fragments into a complete compilable .tex document.
 
     Args:
-        pages: List of LaTeX body strings (no preamble), one per page.
-        title:  Document title.
-        author: Optional author string.
+        pages:    List of LaTeX body strings (no preamble), one per page.
+        title:    Document title.
+        author:   Optional author string (use empty to omit).
+        subtitle: Optional subtitle (typically the detected discipline).
+        include_blurb: If True, insert the Palimpsest blurb on the titlepage.
 
     Returns:
         Complete LaTeX document as a string.
     """
     parts = [LATEX_PREAMBLE]
 
-    # Title block
-    if title:
-        escaped_title = title.replace("_", r"\_").replace("&", r"\&")
-        parts.append(f"\\title{{\\textbf{{{escaped_title}}}}}\n")
-    else:
-        parts.append("\\title{Document}\n")
-    parts.append(f"\\author{{{author}}}\n" if author else "\\author{}\n")
-    parts.append("\\date{}\n\n")
+    # Drive \title / \author / \date — kept in case downstream tools want them,
+    # though we render our own titlepage rather than calling \maketitle.
+    parts.append(f"\\title{{{sanitize_title(title) or 'Document'}}}\n")
+    parts.append(f"\\author{{{sanitize_title(author)}}}\n")
+    parts.append(f"\\date{{{date.today().isoformat()}}}\n\n")
 
-    parts.append("\\begin{document}\n\n")
-    parts.append("\\maketitle\n")
-    parts.append("\\tableofcontents\n")
-    parts.append("\\newpage\n\n")
+    parts.append(r"\begin{document}" + "\n\n")
+
+    # Custom titlepage (replaces \maketitle)
+    parts.append(_titlepage(title, subtitle, author, include_blurb))
+
+    parts.append(r"\tableofcontents" + "\n")
+    parts.append(r"\newpage" + "\n\n")
 
     for page in pages:
-        stripped = page.strip()
+        stripped = (page or "").strip()
         if stripped:
             parts.append(stripped)
             parts.append("\n\n")
 
-    parts.append("\\end{document}\n")
+    parts.append(r"\end{document}" + "\n")
     return "".join(parts)
 
 

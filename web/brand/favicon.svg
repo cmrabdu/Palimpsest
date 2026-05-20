@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Palimpsest">
+  
+  <defs>
+    <linearGradient id="f-paper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6eedd"></stop>
+      <stop offset="1" stop-color="#e0cf9c"></stop>
+    </linearGradient>
+    <linearGradient id="f-term" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5c7bff"></stop>
+      <stop offset="1" stop-color="#2b3e9e"></stop>
+    </linearGradient>
+  </defs>
+  
+  <rect x="2" y="2" width="28" height="28" rx="2.5" fill="url(#f-paper)" stroke="#8a5a1f" stroke-width="1.4"></rect>
+  
+  <rect x="6" y="5" width="1.6" height="22" fill="#b34a3a"></rect>
+  
+  <line x1="10" y1="9" x2="22" y2="9" stroke="#5b4f3a" stroke-width="0.9" stroke-linecap="round" opacity="0.85"></line>
+  <line x1="10" y1="13" x2="19" y2="13" stroke="#5b4f3a" stroke-width="0.9" stroke-linecap="round" opacity="0.85"></line>
+  
+  <path d="M 30 16 L 30 30 L 16 30 Z" fill="url(#f-term)" stroke="#0e1530" stroke-width="1.2" stroke-linejoin="round"></path>
+  
+  <rect x="21" y="20" width="3" height="7" fill="#6fcf97"></rect>
+</svg>

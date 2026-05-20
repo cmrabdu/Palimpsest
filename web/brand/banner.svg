@@ -1,0 +1,181 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 400" width="1280" height="400" role="img" aria-label="Palimpsest — scan → ocr → llm → LaTeX">
+  <defs>
+    <linearGradient id="B-paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6eedd"></stop>
+      <stop offset="1" stop-color="#ead9b0"></stop>
+    </linearGradient>
+    <linearGradient id="B-term" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#161e3f"></stop>
+      <stop offset="1" stop-color="#0e1530"></stop>
+    </linearGradient>
+    <linearGradient id="B-mark-paper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6eedd"></stop>
+      <stop offset="1" stop-color="#e0cf9c"></stop>
+    </linearGradient>
+    <linearGradient id="B-cursor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5c7bff"></stop>
+      <stop offset="1" stop-color="#2b3e9e"></stop>
+    </linearGradient>
+    <pattern id="B-grain" x="0" y="0" width="3" height="3" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="3" y2="0" stroke="rgba(120,90,40,0.05)" stroke-width="0.3"></line>
+    </pattern>
+    <pattern id="B-scan" x="0" y="0" width="1" height="3" patternUnits="userSpaceOnUse">
+      <rect width="1" height="3" fill="transparent"></rect>
+      <line x1="0" y1="0" x2="1" y2="0" stroke="rgba(255,255,255,0.025)" stroke-width="0.5"></line>
+    </pattern>
+    <clipPath id="paper-clip">
+      <rect x="0" y="0" width="638" height="400"></rect>
+    </clipPath>
+  </defs>
+
+  
+  <g clip-path="url(#paper-clip)">
+    <rect x="0" y="0" width="640" height="400" fill="url(#B-paper)"></rect>
+    <rect x="0" y="0" width="640" height="400" fill="url(#B-grain)"></rect>
+    <rect x="68" y="0" width="2" height="400" fill="#b34a3a" opacity="0.85"></rect>
+    <g stroke="rgba(91,79,58,0.16)" stroke-width="1">
+      <line x1="0" y1="60" x2="640" y2="60"></line>
+      <line x1="0" y1="88" x2="640" y2="88"></line>
+      <line x1="0" y1="116" x2="640" y2="116"></line>
+      <line x1="0" y1="312" x2="640" y2="312"></line>
+      <line x1="0" y1="340" x2="640" y2="340"></line>
+      <line x1="0" y1="368" x2="640" y2="368"></line>
+    </g>
+
+    
+    <g transform="translate(96 76)">
+      <g transform="rotate(-4 44 44)">
+        <rect x="6" y="4" width="76" height="96" rx="2" fill="#e7d8b3" stroke="#8a5a1f" stroke-width="1.4" opacity="0.75"></rect>
+      </g>
+      <g>
+        <rect x="0" y="0" width="76" height="100" rx="2" fill="url(#B-mark-paper)" stroke="#8a5a1f" stroke-width="1.8"></rect>
+        <rect x="13" y="8" width="3" height="84" fill="#b34a3a"></rect>
+        <g stroke="#5b4f3a" stroke-width="1.2" stroke-linecap="round" opacity="0.85">
+          <line x1="23" y1="20" x2="65" y2="20"></line>
+          <line x1="23" y1="30" x2="58" y2="30"></line>
+          <line x1="23" y1="40" x2="66" y2="40"></line>
+          <line x1="23" y1="50" x2="56" y2="50"></line>
+          <line x1="23" y1="60" x2="64" y2="60"></line>
+        </g>
+        <path d="M 65 0 L 76 0 L 76 11 Z" fill="#d8c48d" stroke="#8a5a1f" stroke-width="1"></path>
+        <path d="M 65 0 L 76 11" stroke="#8a5a1f" stroke-width="1" fill="none"></path>
+      </g>
+      <g transform="translate(48 62)">
+        <rect x="0" y="0" width="50" height="50" rx="3" fill="url(#B-cursor)" stroke="#0e1530" stroke-width="1.8"></rect>
+        <rect x="-2" y="-2" width="54" height="54" rx="4" fill="none" stroke="#8aa6ff" stroke-width="0.9" opacity="0.55"></rect>
+        <line x1="5" y1="8" x2="45" y2="8" stroke="#e3e7f5" stroke-width="0.7" opacity="0.55"></line>
+        <line x1="5" y1="42" x2="45" y2="42" stroke="#e3e7f5" stroke-width="0.7" opacity="0.55"></line>
+        <rect x="14" y="14" width="7" height="22" fill="#6fcf97"></rect>
+      </g>
+    </g>
+
+    
+    <g transform="translate(216 0)">
+      <text x="0" y="148" font-family="&#39;JetBrains Mono&#39;, ui-monospace, monospace" font-weight="700" font-size="46" fill="#b34a3a">//</text>
+      <text x="64" y="148" font-family="&#39;JetBrains Mono&#39;, ui-monospace, monospace" font-weight="700" font-size="46" letter-spacing="-0.5" fill="#1a1812">Palimpsest</text>
+
+      <text x="65" y="184" font-family="&#39;Spectral&#39;, Georgia, serif" font-style="italic" font-weight="500" font-size="20" fill="#1a1812">Drop your old scan, get a clean</text>
+      <text x="65" y="210" font-family="&#39;Spectral&#39;, Georgia, serif" font-style="italic" font-weight="500" font-size="20" fill="#1a1812">scientific document back.</text>
+
+      <text x="65" y="252" font-family="&#39;JetBrains Mono&#39;, ui-monospace, monospace" font-weight="500" font-size="11" letter-spacing="2.4" fill="#5b4f3a">SCAN <tspan fill="#b34a3a">→</tspan> OCR <tspan fill="#b34a3a">→</tspan> LLM <tspan fill="#b34a3a">→</tspan> LATEX</text>
+    </g>
+
+    <text x="100" y="368" font-family="&#39;JetBrains Mono&#39;, ui-monospace, monospace" font-size="11" letter-spacing="2.2" fill="#9b8e6f">MS · 2026 / VOL. III</text>
+    <text x="100" y="384" font-family="&#39;JetBrains Mono&#39;, ui-monospace, monospace" font-size="10" letter-spacing="1.8" fill="#9b8e6f">made with ♥ by @cmrabdu · open source</text>
+  </g>
+
+  
+  <g>
+    <rect x="638" y="0" width="4" height="400" fill="#2a1f12"></rect>
+    <rect x="640" y="0" width="1" height="400" fill="#000" opacity="0.5"></rect>
+    <g fill="#9b8e6f">
+      <circle cx="640" cy="60" r="3"></circle>
+      <circle cx="640" cy="160" r="3"></circle>
+      <circle cx="640" cy="240" r="3"></circle>
+      <circle cx="640" cy="340" r="3"></circle>
+    </g>
+  </g>
+
+  
+  <g transform="translate(642 0)">
+    <rect x="0" y="0" width="638" height="400" fill="url(#B-term)"></rect>
+    <rect x="0" y="0" width="638" height="400" fill="url(#B-scan)"></rect>
+
+    <g transform="translate(54 70)" font-family="&#39;JetBrains Mono&#39;, ui-monospace, monospace">
+      <text x="0" y="0" font-size="13" fill="#6fcf97">$</text>
+      <text x="22" y="0" font-size="13" fill="#e3e7f5">palimpsest </text>
+      <text x="128" y="0" font-size="13" fill="#8aa6ff">--input </text>
+      <text x="194" y="0" font-size="13" fill="#e3e7f5">statics-ch04.pdf</text>
+    </g>
+
+    <g transform="translate(54 110)" font-family="&#39;JetBrains Mono&#39;, ui-monospace, monospace" font-size="13">
+      <g>
+        <text x="0" y="0" fill="#8895c2">[00:00]</text>
+        <text x="64" y="0" fill="#e3e7f5">•</text>
+        <text x="82" y="0" fill="#e3e7f5">open</text>
+        <text x="180" y="0" fill="#8895c2">statics-ch04.pdf — 12 pages</text>
+      </g>
+      <g transform="translate(0 24)">
+        <text x="0" y="0" fill="#8895c2">[00:02]</text>
+        <text x="64" y="0" fill="#6fcf97">✓</text>
+        <text x="82" y="0" fill="#6fcf97">preprocess</text>
+        <text x="180" y="0" fill="#8895c2">p01-p07  deskew · denoise</text>
+      </g>
+      <g transform="translate(0 48)">
+        <text x="0" y="0" fill="#8895c2">[00:06]</text>
+        <text x="64" y="0" fill="#6fcf97">✓</text>
+        <text x="82" y="0" fill="#6fcf97">ocr</text>
+        <text x="180" y="0" fill="#8895c2">p02 → 982 tok · vision</text>
+      </g>
+      <g transform="translate(0 72)">
+        <text x="0" y="0" fill="#8895c2">[00:10]</text>
+        <text x="64" y="0" fill="#6fcf97">✓</text>
+        <text x="82" y="0" fill="#6fcf97">ocr</text>
+        <text x="180" y="0" fill="#8895c2">p06 → 1322 tok · 3 eqns inline</text>
+      </g>
+      <g transform="translate(0 96)">
+        <text x="0" y="0" fill="#8895c2">[00:11]</text>
+        <text x="64" y="0" fill="#8aa6ff">◐</text>
+        <text x="82" y="0" fill="#8aa6ff">ocr</text>
+        <text x="180" y="0" fill="#8aa6ff">p07 …</text>
+      </g>
+      <g transform="translate(0 124)">
+        <text x="0" y="0" fill="#6fcf97">$</text>
+        <rect x="14" y="-10" width="7" height="13" fill="#6fcf97"></rect>
+      </g>
+    </g>
+
+    <g transform="translate(54 282)">
+      <text x="0" y="-8" font-family="&#39;JetBrains Mono&#39;, ui-monospace, monospace" font-size="11" fill="#8895c2" letter-spacing="1.2">// PROGRESS</text>
+      <text x="530" y="-8" text-anchor="end" font-family="&#39;JetBrains Mono&#39;, ui-monospace, monospace" font-size="11" fill="#e3e7f5">58% · eta 1m 12s</text>
+      <rect x="0" y="0" width="530" height="12" rx="6" fill="rgba(255,255,255,0.05)" stroke="#2a3460"></rect>
+      <rect x="0" y="0" width="307" height="12" rx="6" fill="url(#B-cursor)"></rect>
+      <rect x="0" y="0" width="307" height="12" rx="6" fill="none" stroke="#8aa6ff" opacity="0.5"></rect>
+    </g>
+
+    <g transform="translate(54 322)" font-family="&#39;JetBrains Mono&#39;, ui-monospace, monospace" font-size="10" letter-spacing="1.4">
+      <g>
+        <rect x="0" y="0" width="118" height="22" rx="2" fill="rgba(111,207,151,0.06)" stroke="rgba(111,207,151,0.4)"></rect>
+        <text x="10" y="15" fill="#6fcf97">✓ PREPROCESS</text>
+      </g>
+      <g transform="translate(130 0)">
+        <rect x="0" y="0" width="118" height="22" rx="2" fill="rgba(92,123,255,0.10)" stroke="#5c7bff"></rect>
+        <text x="10" y="15" fill="#8aa6ff">◐ OCR · P 07</text>
+      </g>
+      <g transform="translate(260 0)">
+        <rect x="0" y="0" width="118" height="22" rx="2" fill="rgba(255,255,255,0.02)" stroke="#2a3460"></rect>
+        <text x="10" y="15" fill="#8895c2">○ REWRITE</text>
+      </g>
+      <g transform="translate(390 0)">
+        <rect x="0" y="0" width="118" height="22" rx="2" fill="rgba(255,255,255,0.02)" stroke="#2a3460"></rect>
+        <text x="10" y="15" fill="#8895c2">○ COMPILE</text>
+      </g>
+    </g>
+
+    <g transform="translate(584 50)">
+      <rect x="-90" y="-16" width="86" height="22" rx="11" fill="rgba(92,123,255,0.10)" stroke="rgba(92,123,255,0.4)"></rect>
+      <circle cx="-78" cy="-5" r="3" fill="#8aa6ff"></circle>
+      <text x="-70" y="-1" font-family="&#39;JetBrains Mono&#39;, ui-monospace, monospace" font-size="10" font-weight="700" fill="#8aa6ff" letter-spacing="1.4">LIVE · 07/12</text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Palimpsest — brand kit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;1,400;1,500;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg">
+  <link rel="stylesheet" href="/assets/styles.css">
+  <style>
+    body { background: var(--paper); }
+    .brand-page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 48px 80px;
+      position: relative;
+    }
+    .brand-page::before {
+      content: '';
+      position: absolute;
+      left: 28px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--rule);
+      opacity: 0.85;
+    }
+    .brand-head {
+      display: flex;
+      align-items: flex-end;
+      gap: 32px;
+      padding: 0 0 28px 60px;
+      border-bottom: 1px solid rgba(91,79,58,0.25);
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+    .brand-head h1 {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 56px;
+      line-height: 1;
+      margin: 0;
+      color: var(--ink);
+      font-weight: 500;
+    }
+    .brand-head .lede {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      color: var(--ink-soft);
+      max-width: 380px;
+      margin: 0;
+      flex: 1;
+    }
+    .brand-nav { display: flex; gap: 8px; margin-left: auto; }
+
+    .brand-section {
+      padding-left: 60px;
+      margin-bottom: 56px;
+    }
+    .brand-section .eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--rule);
+      margin: 0 0 6px;
+    }
+    .brand-section h2 {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 28px;
+      font-weight: 500;
+      margin: 0 0 8px;
+      color: var(--ink);
+    }
+    .brand-section .desc {
+      font-family: var(--sans);
+      font-size: 14px;
+      color: var(--ink-soft);
+      margin: 0 0 22px;
+      max-width: 640px;
+    }
+
+    .asset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 18px;
+    }
+    .asset-card {
+      background: white;
+      border: 1px solid rgba(91,79,58,0.18);
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 10px 22px -16px rgba(60,40,10,0.35);
+    }
+    .asset-preview {
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      overflow: hidden;
+      position: relative;
+    }
+    .preview-checker {
+      background:
+        linear-gradient(45deg, #ededed 25%, transparent 25%, transparent 75%, #ededed 75%, #ededed),
+        linear-gradient(45deg, #ededed 25%, transparent 25%, transparent 75%, #ededed 75%, #ededed) 8px 8px,
+        white;
+      background-size: 16px 16px;
+    }
+    .preview-paper { background: var(--paper); }
+    .preview-dark  { background: var(--term-bg); }
+    .asset-preview img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    .asset-meta {
+      padding: 12px 14px 12px;
+      border-top: 1px solid rgba(91,79,58,0.12);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .asset-name {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .asset-sub {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      color: var(--ink-soft);
+    }
+    .asset-actions {
+      display: flex;
+      gap: 6px;
+      padding: 10px 14px 12px;
+      border-top: 1px dashed rgba(91,79,58,0.20);
+    }
+    .asset-actions a {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 6px 10px;
+      border: 1px solid rgba(91,79,58,0.30);
+      border-radius: 2px;
+      color: var(--ink-soft);
+      transition: all 120ms;
+    }
+    .asset-actions a:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+    .favicon-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 22px;
+      flex-wrap: wrap;
+      padding: 24px 22px;
+      background: white;
+      border: 1px solid rgba(91,79,58,0.18);
+      border-radius: 4px;
+    }
+    .favicon-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .favicon-cell .fav-bg {
+      background:
+        linear-gradient(45deg, #ededed 25%, transparent 25%, transparent 75%, #ededed 75%, #ededed),
+        linear-gradient(45deg, #ededed 25%, transparent 25%, transparent 75%, #ededed 75%, #ededed) 8px 8px,
+        white;
+      background-size: 16px 16px;
+      border: 1px solid rgba(0,0,0,0.06);
+      padding: 8px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .favicon-cell img { display: block; image-rendering: -webkit-optimize-contrast; }
+    .favicon-cell .label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--ink-soft);
+      letter-spacing: 0.06em;
+    }
+
+    .banner-card {
+      border: 1px solid rgba(91,79,58,0.18);
+      border-radius: 4px;
+      overflow: hidden;
+      background: var(--paper-2);
+      box-shadow: 0 14px 30px -18px rgba(60,40,10,0.35);
+    }
+    .banner-card img { width: 100%; display: block; }
+    .banner-foot {
+      padding: 14px 18px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: white;
+      border-top: 1px solid rgba(91,79,58,0.12);
+      flex-wrap: wrap;
+    }
+    .banner-foot .name { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--ink); }
+    .banner-foot .dim  { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); letter-spacing: 0.06em; }
+
+    .meta-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .meta-pair > * { width: 100%; }
+
+    @media (max-width: 700px) {
+      .brand-page { padding: 28px 24px 60px; }
+      .brand-section, .brand-head { padding-left: 32px; }
+      .brand-page::before { left: 12px; }
+      .meta-pair { grid-template-columns: 1fr; }
+      .brand-head h1 { font-size: 38px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="brand-page">
+    <header class="brand-head">
+      <h1>Brand kit</h1>
+      <p class="lede">
+        Logo, favicons, social banner, and an OG image. SVG is the source of truth — PNGs are rasterized for product integrations that can't render SVG (Slack avatars, GitHub social previews, marketplace listings).
+      </p>
+      <nav class="brand-nav">
+        <a href="/" class="btn btn-paper btn-sm">/ workshop</a>
+        <a href="/jobs.html"  class="btn btn-ghost btn-sm">/ jobs</a>
+      </nav>
+    </header>
+
+    <!-- LOGO ------------------------------------------------------- -->
+    <section class="brand-section">
+      <p class="eyebrow">§ 01 · LOGO LOCKUP</p>
+      <h2>Mark + wordmark</h2>
+      <p class="desc">
+        The mark layers a paper page (red ledger margin, hairlines, folded corner) under a terminal cursor block —
+        the literal "old paper meets new terminal" idea. The wordmark uses JetBrains Mono Bold with the
+        rule-red <span class="mono" style="color:var(--rule)">//</span> prefix that appears throughout the product.
+      </p>
+
+      <div class="asset-grid" style="grid-template-columns: 1fr 1fr; gap: 22px;">
+        <div class="asset-card">
+          <div class="asset-preview preview-paper">
+            <img src="/brand/logo.svg" alt="Logo on paper background">
+          </div>
+          <div class="asset-meta">
+            <span class="asset-name">logo.svg</span>
+            <span class="asset-sub">on paper background · 520 × 160 · use on light surfaces</span>
+          </div>
+          <div class="asset-actions">
+            <a href="/brand/logo.svg" download>SVG</a>
+            <a href="/brand/logo.png" download>PNG · 2×</a>
+          </div>
+        </div>
+
+        <div class="asset-card">
+          <div class="asset-preview preview-checker">
+            <img src="/brand/logo-transparent.svg" alt="Logo on transparent background">
+          </div>
+          <div class="asset-meta">
+            <span class="asset-name">logo-transparent.svg</span>
+            <span class="asset-sub">transparent · 520 × 160 · default for product integrations</span>
+          </div>
+          <div class="asset-actions">
+            <a href="/brand/logo-transparent.svg" download>SVG</a>
+            <a href="/brand/logo-transparent.png" download>PNG · 2×</a>
+          </div>
+        </div>
+
+        <div class="asset-card">
+          <div class="asset-preview preview-dark">
+            <img src="/brand/logo-dark.svg" alt="Logo on dark background">
+          </div>
+          <div class="asset-meta">
+            <span class="asset-name">logo-dark.svg</span>
+            <span class="asset-sub">dark / terminal surfaces · same lockup, lifted contrast</span>
+          </div>
+          <div class="asset-actions">
+            <a href="/brand/logo-dark.svg" download>SVG</a>
+            <a href="/brand/logo-dark.png" download>PNG · 2×</a>
+          </div>
+        </div>
+
+        <div class="asset-card">
+          <div class="asset-preview preview-checker">
+            <img src="/brand/mark.svg" alt="Mark only" style="max-height: 110px;">
+          </div>
+          <div class="asset-meta">
+            <span class="asset-name">mark.svg</span>
+            <span class="asset-sub">mark only · 64 × 64 · for tight spaces (chat avatars, mobile)</span>
+          </div>
+          <div class="asset-actions">
+            <a href="/brand/mark.svg" download>SVG</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAVICON ---------------------------------------------------- -->
+    <section class="brand-section">
+      <p class="eyebrow">§ 02 · FAVICON</p>
+      <h2>Browser tab</h2>
+      <p class="desc">
+        SVG-first (sharp at any zoom on modern browsers), with PNG fallbacks at 16, 32, 64, 180 (Apple touch), and 256 px.
+        Stripped down for legibility under 32 px: a paper square, the red margin, and a corner-mounted terminal wedge.
+      </p>
+
+      <div class="favicon-row">
+        <div class="favicon-cell">
+          <div class="fav-bg" style="width: 24px; height: 24px;"><img src="/brand/favicon.svg" width="16" height="16" alt=""></div>
+          <span class="label">16 · tab</span>
+        </div>
+        <div class="favicon-cell">
+          <div class="fav-bg" style="width: 40px; height: 40px;"><img src="/brand/favicon.svg" width="32" height="32" alt=""></div>
+          <span class="label">32 · tab</span>
+        </div>
+        <div class="favicon-cell">
+          <div class="fav-bg" style="width: 72px; height: 72px;"><img src="/brand/favicon.svg" width="64" height="64" alt=""></div>
+          <span class="label">64 · pinned</span>
+        </div>
+        <div class="favicon-cell">
+          <div class="fav-bg" style="width: 124px; height: 124px;"><img src="/brand/favicon.svg" width="112" height="112" alt=""></div>
+          <span class="label">128 · launcher</span>
+        </div>
+        <div class="favicon-cell">
+          <div class="fav-bg" style="width: 196px; height: 196px;"><img src="/brand/apple-touch-icon.png" width="180" height="180" alt=""></div>
+          <span class="label">180 · apple-touch-icon (paper-padded)</span>
+        </div>
+
+        <div style="margin-left: auto; display: flex; flex-direction: column; gap: 6px; align-self: stretch; justify-content: center;">
+          <a href="/brand/favicon.svg" download class="btn btn-paper btn-sm">↓ favicon.svg</a>
+          <a href="/brand/favicon-32.png" download class="btn btn-ghost btn-sm">↓ favicon-32.png</a>
+          <a href="/brand/favicon-16.png" download class="btn btn-ghost btn-sm">↓ favicon-16.png</a>
+          <a href="/brand/favicon-64.png" download class="btn btn-ghost btn-sm">↓ favicon-64.png</a>
+          <a href="/brand/apple-touch-icon.png" download class="btn btn-ghost btn-sm">↓ apple-touch-icon.png</a>
+        </div>
+      </div>
+
+      <div style="margin-top: 22px; padding: 14px 18px; background: rgba(255,255,255,0.5); border: 1px dashed rgba(91,79,58,0.30); border-radius: 4px; font-family: var(--mono); font-size: 12px; line-height: 1.7; color: var(--ink-soft); white-space: pre-wrap;">  &lt;link rel="icon" type="image/svg+xml" href="/brand/favicon.svg"&gt;
+  &lt;link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png"&gt;
+  &lt;link rel="icon" type="image/png" sizes="16x16" href="/brand/favicon-16.png"&gt;
+  &lt;link rel="apple-touch-icon" sizes="180x180" href="/brand/apple-touch-icon.png"&gt;</div>
+    </section>
+
+    <!-- BANNER ----------------------------------------------------- -->
+    <section class="brand-section">
+      <p class="eyebrow">§ 03 · BANNER</p>
+      <h2>Product banner · paper × terminal</h2>
+      <p class="desc">
+        A wide banner for product integrations — GitHub repo header, README hero, marketplace listings, course thumbnails.
+        Holds the full paper-then-terminal duality the product is built on.
+      </p>
+
+      <div class="banner-card">
+        <img src="/brand/banner.svg" alt="Palimpsest banner — paper on the left, terminal on the right">
+        <div class="banner-foot">
+          <span class="name">banner.svg</span>
+          <span class="dim">1280 × 400 · 32:10</span>
+          <span style="margin-left: auto; display: flex; gap: 6px;">
+            <a href="/brand/banner.svg" download class="btn btn-paper btn-sm">↓ SVG</a>
+            <a href="/brand/banner.png" download class="btn btn-ghost btn-sm">↓ PNG</a>
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- OG IMAGE --------------------------------------------------- -->
+    <section class="brand-section">
+      <p class="eyebrow">§ 04 · SOCIAL</p>
+      <h2>Open Graph preview</h2>
+      <p class="desc">
+        Square-ish 1200 × 630 card optimized for link unfurls on Twitter / X, Discord, Slack, LinkedIn, Mastodon. Big mark, big italic promise.
+      </p>
+
+      <div class="banner-card">
+        <img src="/brand/og-image.svg" alt="Palimpsest OG image">
+        <div class="banner-foot">
+          <span class="name">og-image.svg</span>
+          <span class="dim">1200 × 630 · 1.91:1 · for &lt;meta property="og:image"&gt;</span>
+          <span style="margin-left: auto; display: flex; gap: 6px;">
+            <a href="/brand/og-image.svg" download class="btn btn-paper btn-sm">↓ SVG</a>
+            <a href="/brand/og-image.png" download class="btn btn-ghost btn-sm">↓ PNG</a>
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- USAGE NOTES ------------------------------------------------ -->
+    <section class="brand-section">
+      <p class="eyebrow">§ 05 · USAGE</p>
+      <h2>Quick rules</h2>
+      <ul style="font-family: var(--sans); font-size: 14px; line-height: 1.7; color: var(--ink); max-width: 720px; padding-left: 18px; margin: 0;">
+        <li>Use the <span class="mono">// Palimpsest</span> lockup wherever there's room for the wordmark. Use <span class="mono">mark.svg</span> when there isn't.</li>
+        <li>Keep clear space around the lockup equal to the height of the <span class="mono">//</span> glyphs.</li>
+        <li>Don't recolor the rule-red <span class="mono" style="color:var(--rule)">//</span>. That's the one anchor that ties the wordmark to the rest of the product.</li>
+        <li>Don't put the paper variant on a saturated background. Use <span class="mono">logo-dark.svg</span> on anything darker than mid-grey.</li>
+        <li>Need a single-color version? Strip the mark to its outline; the wordmark holds its own as text.</li>
+      </ul>
+    </section>
+
+    <footer style="margin-top: 40px; padding: 22px 0 0 60px; border-top: 1px solid rgba(91,79,58,0.25); font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.08em; display: flex; gap: 12px;">
+      <span>made with ♥ by @cmrabdu</span>
+      <span>·</span>
+      <a class="footer-link" href="#">github ↗</a>
+      <span>·</span>
+      <a class="footer-link" href="#">cmrabdu.com</a>
+      <span style="margin-left: auto; font-family: var(--serif); font-style: italic; color: var(--ink-faint); font-size: 12px;">vol. iii · brand kit</span>
+    </footer>
+  </div>
+</body>
+</html>

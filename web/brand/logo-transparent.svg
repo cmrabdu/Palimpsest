@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 160" width="520" height="160" role="img" aria-label="Palimpsest">
+  <defs>
+    <linearGradient id="LT-mark-paper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6eedd"></stop>
+      <stop offset="1" stop-color="#e0cf9c"></stop>
+    </linearGradient>
+    <linearGradient id="LT-term" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5c7bff"></stop>
+      <stop offset="1" stop-color="#2b3e9e"></stop>
+    </linearGradient>
+  </defs>
+
+  
+  <g transform="translate(30 36)">
+    <g transform="rotate(-4 44 44)">
+      <rect x="6" y="4" width="64" height="80" rx="2" fill="#e7d8b3" stroke="#8a5a1f" stroke-width="1.4" opacity="0.75"></rect>
+    </g>
+    <g>
+      <rect x="0" y="0" width="64" height="82" rx="2" fill="url(#LT-mark-paper)" stroke="#8a5a1f" stroke-width="1.6"></rect>
+      <rect x="11" y="6" width="2.4" height="70" fill="#b34a3a"></rect>
+      <g stroke="#5b4f3a" stroke-width="1" stroke-linecap="round" opacity="0.85">
+        <line x1="20" y1="16" x2="54" y2="16"></line>
+        <line x1="20" y1="24" x2="50" y2="24"></line>
+        <line x1="20" y1="32" x2="55" y2="32"></line>
+        <line x1="20" y1="40" x2="48" y2="40"></line>
+        <line x1="20" y1="48" x2="54" y2="48"></line>
+      </g>
+      <path d="M 55 0 L 64 0 L 64 9 Z" fill="#d8c48d" stroke="#8a5a1f" stroke-width="1"></path>
+      <path d="M 55 0 L 64 9" stroke="#8a5a1f" stroke-width="1" fill="none"></path>
+    </g>
+
+    <g transform="translate(40 52)">
+      <rect x="0" y="0" width="40" height="40" rx="2.5" fill="url(#LT-term)" stroke="#0e1530" stroke-width="1.6"></rect>
+      <rect x="-1.5" y="-1.5" width="43" height="43" rx="3.5" fill="none" stroke="#8aa6ff" stroke-width="0.8" opacity="0.55"></rect>
+      <line x1="4" y1="6" x2="36" y2="6" stroke="#e3e7f5" stroke-width="0.6" opacity="0.55"></line>
+      <line x1="4" y1="34" x2="36" y2="34" stroke="#e3e7f5" stroke-width="0.6" opacity="0.55"></line>
+      <rect x="11" y="11" width="6" height="18" fill="#6fcf97"></rect>
+    </g>
+  </g>
+
+  
+  <g transform="translate(160 0)">
+    <text x="0" y="92" font-family="&#39;JetBrains Mono&#39;, ui-monospace, monospace" font-weight="700" font-size="44" fill="#b34a3a">//</text>
+    <text x="62" y="92" font-family="&#39;JetBrains Mono&#39;, ui-monospace, monospace" font-weight="700" font-size="44" fill="#1a1812" letter-spacing="-0.5">Palimpsest</text>
+    <text x="64" y="116" font-family="&#39;JetBrains Mono&#39;, ui-monospace, monospace" font-weight="500" font-size="11" letter-spacing="2.6" fill="#5b4f3a">SCAN <tspan fill="#b34a3a">→</tspan> OCR <tspan fill="#b34a3a">→</tspan> LLM <tspan fill="#b34a3a">→</tspan> LATEX</text>
+  </g>
+</svg>
