@@ -364,7 +364,13 @@ async def ws_progress(websocket: WebSocket, job_id: str):
 
     try:
         while True:
-            await websocket.receive_text()  # Keep alive
+            try:
+                # Wait up to 25 s for a client frame.
+                # If nothing arrives we send a ping to keep Cloudflare/proxies
+                # from closing the idle connection (CF kills after ~100 s).
+                await asyncio.wait_for(websocket.receive_text(), timeout=25.0)
+            except asyncio.TimeoutError:
+                await websocket.send_json({"type": "ping"})
     except WebSocketDisconnect:
         pass
     finally:

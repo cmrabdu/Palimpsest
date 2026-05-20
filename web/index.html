@@ -204,34 +204,33 @@
       }, [file, cfg]);
 
       // ── connect to a job (new or resumed) ────────────────────────
-      const startTracking = useCallback((id, filename) => {
-        setJobId(id);
-        setState('processing');
-        setPage(0);
-        setTotal(pageCount || 0);
-        setStage('preprocessing');
-        setErrorMsg(null);
-        setLog([{
-          time: formatTime(), glyph: '•', stage: 'open',
-          msg: `${filename || id} — ${pageCount ? `${pageCount} pages` : 'starting'}`,
-          tone: '',
-        }]);
-        // close any prior socket
-        if (wsRef.current) { try { wsRef.current.close(); } catch {} }
+      const reconnectTimerRef = React.useRef(null);
+      const jobFinishedRef   = React.useRef(false);
+
+      const connectWs = useCallback((id) => {
+        if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
         const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
         const ws = new WebSocket(`${proto}//${location.host}/ws/${id}`);
         wsRef.current = ws;
         ws.onopen = () => setWsConnected(true);
-        ws.onclose = () => setWsConnected(false);
+        ws.onclose = () => {
+          setWsConnected(false);
+          // Auto-reconnect while the job is still running (Cloudflare timeout, etc.)
+          if (!jobFinishedRef.current) {
+            reconnectTimerRef.current = setTimeout(() => connectWs(id), 2000);
+          }
+        };
         ws.onerror = () => setWsConnected(false);
         ws.onmessage = ({ data }) => {
           let d; try { d = JSON.parse(data); } catch { return; }
+          if (d.type === 'ping') return; // server keepalive — ignore
           if (d.type === 'progress') {
             setPage(d.page);
             setTotal(d.total);
             setStage(d.stage || 'preprocessing');
             setLog(L => [...L, logEntry(d.page, d.total, d.stage || '')]);
           } else if (d.type === 'done') {
+            jobFinishedRef.current = true;
             setState('done');
             setHasPdf(d.has_pdf !== false);
             setLog(L => [...L, {
@@ -241,6 +240,7 @@
             }]);
             try { ws.close(); } catch {}
           } else if (d.type === 'error') {
+            jobFinishedRef.current = true;
             setState('error');
             setErrorMsg(d.message || 'pipeline halted');
             setLog(L => [...L, {
@@ -252,16 +252,17 @@
           } else if (d.type === 'status') {
             // initial snapshot when reconnecting
             if (d.filename) {
-              // we may not have the file blob, but we know the filename
               setFile(f => f || { name: d.filename, size: 0 });
             }
             if (d.total) setTotal(d.total);
             if (d.progress) setPage(d.progress);
             if (d.stage) setStage(d.stage);
             if (d.status === 'done') {
+              jobFinishedRef.current = true;
               setState('done');
               setHasPdf(d.has_pdf !== false);
             } else if (d.status === 'error') {
+              jobFinishedRef.current = true;
               setState('error');
               setErrorMsg(d.error || 'pipeline halted');
             } else if (d.status === 'processing' || d.status === 'queued') {
@@ -269,7 +270,25 @@
             }
           }
         };
-      }, [pageCount]);
+      }, []);
+
+      const startTracking = useCallback((id, filename) => {
+        setJobId(id);
+        setState('processing');
+        setPage(0);
+        setTotal(pageCount || 0);
+        setStage('preprocessing');
+        setErrorMsg(null);
+        jobFinishedRef.current = false;
+        setLog([{
+          time: formatTime(), glyph: '•', stage: 'open',
+          msg: `${filename || id} — ${pageCount ? `${pageCount} pages` : 'starting'}`,
+          tone: '',
+        }]);
+        // close any prior socket
+        if (wsRef.current) { try { wsRef.current.close(); } catch {} }
+        connectWs(id);
+      }, [pageCount, connectWs]);
 
       // ── resume in-flight job from URL ?job=… ─────────────────────
       useEffect(() => {
@@ -292,7 +311,10 @@
             })
             .catch(() => showToast('⚠ cannot resume job'));
         }
-        return () => { if (wsRef.current) { try { wsRef.current.close(); } catch {} } };
+        return () => {
+          if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+          if (wsRef.current) { try { wsRef.current.close(); } catch {} }
+        };
       // eslint-disable-next-line react-hooks/exhaustive-deps
       }, []);
 
