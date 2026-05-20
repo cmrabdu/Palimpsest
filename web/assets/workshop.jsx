@@ -394,7 +394,12 @@ function Workshop(props) {
           <SpecimenCard cfg={cfg} setCfg={setCfg} cost={cost} />
         </div>
         <div className="paper-footer">
-          <span className="mono">made with ♥ by @cmrabdu · open source</span>
+          <span className="mono">
+            made with ♥ by{' '}
+            <a href="https://github.com/cmrabdu" target="_blank" rel="noreferrer" className="footer-link">@cmrabdu</a>
+            {' · '}
+            <a href="https://github.com/cmrabdu/Palimpsest" target="_blank" rel="noreferrer" className="footer-link">source ↗</a>
+          </span>
           <Button
             variant="ai"
             size="lg"
@@ -435,8 +440,10 @@ function Workshop(props) {
           <span>palimpsest 0.6.2</span>
           {jobId && <span>· run-id {jobId}</span>}
           <span style={{ flex: 1 }} />
+          <a href="/about.html" className="footer-link">↳ about</a>
           <a href="/brand.html" className="footer-link">↳ brand kit</a>
           <a href="/jobs.html" className="footer-link">↳ archive register</a>
+          <a href="https://github.com/cmrabdu/Palimpsest" target="_blank" rel="noreferrer" className="footer-link">↳ github</a>
         </div>
       </section>
     </div>

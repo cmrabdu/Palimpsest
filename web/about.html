@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Palimpsest — what it is &amp; how it works</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Palimpsest is an open-source tool that turns hard-to-read scanned PDFs of STEM lecture notes into clean, modern LaTeX documents. Built by a student, for students.">
+  <meta name="theme-color" content="#f1e7d0">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;1,400;1,500;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- favicons -->
+  <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/brand/favicon-16.png">
+  <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+
+  <!-- OG -->
+  <meta property="og:title" content="Palimpsest — old scans → clean LaTeX">
+  <meta property="og:description" content="The open-source pipeline that reads through the noise of scanned lecture notes and rewrites them as proper, typeset LaTeX documents.">
+  <meta property="og:image" content="/brand/og-image.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="stylesheet" href="/assets/styles.css">
+  <style>
+    body { background: var(--paper); }
+
+    .about-page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 40px 48px 80px;
+      position: relative;
+    }
+    .about-page::before {
+      content: '';
+      position: absolute;
+      left: 28px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--rule);
+      opacity: 0.85;
+    }
+
+    .about-head {
+      display: flex;
+      align-items: flex-end;
+      gap: 32px;
+      padding: 0 0 28px 60px;
+      border-bottom: 1px solid rgba(91,79,58,0.25);
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+    }
+    .about-head .wordmark {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .about-head .slash {
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 36px;
+      color: var(--rule);
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+    .about-head h1 {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 56px;
+      line-height: 1;
+      margin: 0;
+      color: var(--ink);
+      font-weight: 500;
+    }
+    .about-head .lede {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      color: var(--ink-soft);
+      max-width: 380px;
+      margin: 0;
+      flex: 1;
+    }
+    .about-nav { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+
+    .about-section {
+      padding-left: 60px;
+      margin-bottom: 56px;
+    }
+    .about-section .eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--rule);
+      margin: 0 0 6px;
+    }
+    .about-section h2 {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 28px;
+      font-weight: 500;
+      margin: 0 0 14px;
+      color: var(--ink);
+    }
+    .about-section p {
+      font-family: var(--serif);
+      font-size: 17px;
+      line-height: 1.65;
+      color: var(--ink);
+      margin: 0 0 14px;
+      max-width: 720px;
+    }
+    .about-section p.note {
+      font-family: var(--sans);
+      font-size: 14px;
+      color: var(--ink-soft);
+      max-width: 720px;
+    }
+    .about-section em.term {
+      font-style: italic;
+      font-family: var(--serif);
+    }
+
+    /* etymology pull-quote */
+    .etymology {
+      margin: 28px 0 28px 60px;
+      padding: 18px 24px;
+      border-left: 3px solid var(--rule);
+      background: rgba(91,79,58,0.05);
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 16px;
+      color: var(--ink);
+      max-width: 720px;
+    }
+    .etymology strong {
+      font-style: normal;
+      font-weight: 600;
+    }
+    .etymology .ipa {
+      font-family: var(--mono);
+      font-style: normal;
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
+
+    /* problem / solution side-by-side */
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 32px 1fr;
+      gap: 0;
+      align-items: stretch;
+      margin: 24px 0;
+      max-width: 760px;
+    }
+    .compare-col {
+      background: white;
+      border: 1px solid rgba(91,79,58,0.18);
+      border-radius: 4px;
+      padding: 22px;
+      box-shadow: 0 10px 22px -16px rgba(60,40,10,0.35);
+    }
+    .compare-col.before { background: #f7eedb; }
+    .compare-col h3 {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--rule);
+      margin: 0 0 12px;
+    }
+    .compare-col .scan {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.4;
+      color: rgba(60,40,10,0.6);
+      letter-spacing: 0.03em;
+      filter: blur(0.4px);
+      opacity: 0.85;
+    }
+    .compare-col .clean {
+      font-family: 'Latin Modern Roman', 'Computer Modern', serif;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+    .compare-col .clean .eq {
+      display: block;
+      text-align: center;
+      margin: 10px 0;
+      font-family: 'Latin Modern Math', 'Computer Modern', serif;
+      font-style: italic;
+    }
+    .compare-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 18px;
+      color: var(--rule);
+    }
+
+    /* pipeline steps */
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 18px;
+      margin: 24px 0;
+      max-width: 920px;
+    }
+    .step {
+      background: white;
+      border: 1px solid rgba(91,79,58,0.18);
+      border-radius: 4px;
+      padding: 20px 18px;
+      position: relative;
+      box-shadow: 0 8px 18px -14px rgba(60,40,10,0.35);
+    }
+    .step .num {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--rule);
+      letter-spacing: 0.16em;
+      margin-bottom: 6px;
+    }
+    .step h4 {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 19px;
+      font-weight: 500;
+      margin: 0 0 10px;
+      color: var(--ink);
+    }
+    .step p {
+      font-family: var(--sans);
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--ink-soft);
+      margin: 0;
+    }
+    .step .tech {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: var(--rule);
+      margin-top: 12px;
+      text-transform: uppercase;
+    }
+
+    /* feature grid */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      max-width: 920px;
+    }
+    .feature {
+      padding: 14px 0 14px 18px;
+      border-left: 2px solid rgba(91,79,58,0.25);
+    }
+    .feature h4 {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0 0 6px;
+      letter-spacing: 0.04em;
+    }
+    .feature p {
+      font-family: var(--sans);
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--ink-soft);
+      margin: 0;
+    }
+
+    /* FAQ */
+    .faq details {
+      border-top: 1px solid rgba(91,79,58,0.18);
+      padding: 16px 0;
+      max-width: 720px;
+    }
+    .faq details:last-child {
+      border-bottom: 1px solid rgba(91,79,58,0.18);
+    }
+    .faq summary {
+      cursor: pointer;
+      font-family: var(--serif);
+      font-size: 17px;
+      color: var(--ink);
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::before {
+      content: '+';
+      font-family: var(--mono);
+      font-weight: 700;
+      color: var(--rule);
+      font-size: 18px;
+      line-height: 1;
+    }
+    .faq details[open] summary::before { content: '−'; }
+    .faq details p {
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--ink-soft);
+      margin: 12px 0 0 26px;
+      max-width: 660px;
+    }
+    .faq details p code {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      background: rgba(91,79,58,0.1);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    /* CTA */
+    .cta-block {
+      margin-top: 56px;
+      margin-left: 60px;
+      padding: 32px 36px;
+      background: var(--ink);
+      color: var(--paper);
+      border-radius: 6px;
+      max-width: 720px;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-block::before {
+      content: '//';
+      position: absolute;
+      top: 18px;
+      right: 24px;
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 22px;
+      color: var(--rule);
+      letter-spacing: -0.04em;
+    }
+    .cta-block h3 {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 26px;
+      font-weight: 500;
+      margin: 0 0 10px;
+      color: var(--paper);
+    }
+    .cta-block p {
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.6;
+      color: rgba(241,231,208,0.75);
+      margin: 0 0 22px;
+      max-width: 540px;
+    }
+    .cta-block .btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .cta-block .btn-primary,
+    .cta-block .btn-secondary {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      padding: 9px 18px;
+      border-radius: 3px;
+      text-decoration: none;
+      transition: transform 0.15s ease;
+    }
+    .cta-block .btn-primary {
+      background: var(--rule);
+      color: var(--paper);
+    }
+    .cta-block .btn-secondary {
+      background: transparent;
+      color: var(--paper);
+      border: 1px solid rgba(241,231,208,0.3);
+    }
+    .cta-block .btn-primary:hover,
+    .cta-block .btn-secondary:hover {
+      transform: translateY(-1px);
+    }
+
+    /* tiny utility nav buttons */
+    .nav-btn {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 7px 14px;
+      border: 1px solid rgba(91,79,58,0.3);
+      border-radius: 3px;
+      color: var(--ink);
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    .nav-btn:hover {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+
+    @media (max-width: 720px) {
+      .about-page { padding: 24px 20px 60px; }
+      .about-page::before { left: 12px; }
+      .about-head { padding-left: 32px; gap: 18px; }
+      .about-head h1 { font-size: 40px; }
+      .about-head .slash { font-size: 28px; }
+      .about-section { padding-left: 32px; }
+      .about-section h2 { font-size: 23px; }
+      .about-section p { font-size: 16px; }
+      .compare { grid-template-columns: 1fr; }
+      .compare-arrow { transform: rotate(90deg); padding: 8px 0; }
+      .etymology { margin-left: 32px; }
+      .cta-block { margin-left: 32px; padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="about-page">
+
+    <!-- HEADER ------------------------------------------------------ -->
+    <header class="about-head">
+      <div class="wordmark">
+        <span class="slash">//</span>
+        <h1>Palimpsest</h1>
+      </div>
+      <p class="lede">An open-source tool that reads through the noise of scanned lecture notes and rewrites them as clean, modern LaTeX documents. Made by a student, for students.</p>
+      <nav class="about-nav">
+        <a class="nav-btn" href="/">↳ workshop</a>
+        <a class="nav-btn" href="/jobs.html">↳ archive</a>
+        <a class="nav-btn" href="https://github.com/cmrabdu/Palimpsest" target="_blank" rel="noreferrer">↳ github</a>
+      </nav>
+    </header>
+
+    <!-- § 01 — WHY -------------------------------------------------- -->
+    <section class="about-section">
+      <p class="eyebrow">§ 01 · WHY THIS EXISTS</p>
+      <h2>A specific kind of frustration</h2>
+      <p>
+        University courses are full of brilliant lecturers whose course materials
+        haven't aged well: <em class="term">scanned photocopies of handwritten notes</em>,
+        pages photographed with CamScanner, image-only PDFs with no text layer,
+        no copy-paste, no search. Dense physics, statics, fluid mechanics, tensor
+        notation — locked inside blurry pixels.
+      </p>
+      <p>
+        Generic OCR doesn't work. Tesseract chokes on
+        <code style="font-family:var(--mono);font-size:14px;background:rgba(91,79,58,0.1);padding:1px 5px;border-radius:3px;">∂²u/∂x²</code>.
+        Google Docs mangles integrals. There's nothing built for STEM content
+        that doesn't cost a fortune or require a Mathpix subscription.
+      </p>
+      <p>
+        Palimpsest is the workaround. Drop a scanned PDF, get a clean
+        <code style="font-family:var(--mono);font-size:14px;background:rgba(91,79,58,0.1);padding:1px 5px;border-radius:3px;">.tex</code>
+        and a compiled <code style="font-family:var(--mono);font-size:14px;background:rgba(91,79,58,0.1);padding:1px 5px;border-radius:3px;">.pdf</code>
+        back — readable, searchable, printable, hand-in-able. That's the whole
+        promise.
+      </p>
+
+      <div class="etymology">
+        <strong>palimpsest</strong> <span class="ipa">/ˈpalɪmp.sɛst/</span> · a manuscript page that has
+        been scraped clean and written over, so that traces of the original text
+        still show through. That's exactly what this tool does: it reads through
+        the noise and rewrites the content cleanly.
+      </div>
+    </section>
+
+    <!-- § 02 — BEFORE / AFTER --------------------------------------- -->
+    <section class="about-section">
+      <p class="eyebrow">§ 02 · BEFORE &amp; AFTER</p>
+      <h2>What you put in, what comes out</h2>
+      <p class="note">A typical page from a 1980s mechanics course, before and after Palimpsest:</p>
+
+      <div class="compare">
+        <div class="compare-col before">
+          <h3>Original scan</h3>
+          <div class="scan">
+            ░▒▓▓░ Statique ░▒░<br>
+            ▓░ Solide en équilibre ░▒<br>
+            ░ ∑F = 0  ∑M = 0 ░░<br>
+            ▒░ exemple : poutre ▓░<br>
+            ░ encastrée en A ░░░▒<br>
+            ▓░ M(A) = -F·L ░░▓░<br>
+            ░ R(A) = F ░░░▒▓░░<br>
+            ▒ (figure 4.2) ░░▒░<br>
+            ░░ démonstration… ░░<br>
+            ▓░ d²θ/dt² = -k/m·θ ▒<br>
+          </div>
+        </div>
+        <div class="compare-arrow">▷▷▷</div>
+        <div class="compare-col after">
+          <h3>Clean LaTeX</h3>
+          <div class="clean">
+            <strong>Section 4 · Statique</strong><br>
+            Pour un solide en équilibre statique :
+            <span class="eq">∑ F&#8407; = 0&#8195;∑ M&#8407; = 0</span>
+            <em>Exemple.</em> Une poutre encastrée en A subit une force F à
+            son extrémité, à distance L. Les réactions à l'encastrement sont :
+            <span class="eq">R<sub>A</sub> = F &#8195; M<sub>A</sub> = −F·L</span>
+          </div>
+        </div>
+      </div>
+      <p class="note">
+        Equations are typeset properly. Sections are numbered. The Table of
+        Contents is generated. Every figure reference points somewhere real.
+        Open it in Overleaf, edit, hand in.
+      </p>
+    </section>
+
+    <!-- § 03 — HOW IT WORKS ----------------------------------------- -->
+    <section class="about-section">
+      <p class="eyebrow">§ 03 · HOW IT WORKS</p>
+      <h2>The pipeline, in six steps</h2>
+      <p>
+        Each page goes through a chain of small, replaceable stages. If one
+        fails, the rest keep going; if you stop midway, you can resume from the
+        last cached page.
+      </p>
+
+      <div class="pipeline">
+        <div class="step">
+          <div class="num">01 · EXTRACT</div>
+          <h4>Page → image</h4>
+          <p>Every page of the PDF is rasterised at 400&nbsp;DPI so even the smallest indices stay legible.</p>
+          <div class="tech">pdf2image · poppler</div>
+        </div>
+        <div class="step">
+          <div class="num">02 · PREPROCESS</div>
+          <h4>Clean the scan</h4>
+          <p>Adaptive binarisation kills the photocopy grain, Hough deskew straightens the page, denoising smooths the rest.</p>
+          <div class="tech">OpenCV</div>
+        </div>
+        <div class="step">
+          <div class="num">03 · READ</div>
+          <h4>Vision OCR</h4>
+          <p>A vision LLM reads the page image directly — formulas, Greek letters, integrals, indices — and emits a first LaTeX pass.</p>
+          <div class="tech">OpenAI · Anthropic</div>
+        </div>
+        <div class="step">
+          <div class="num">04 · CONTEXT</div>
+          <h4>Carry meaning across pages</h4>
+          <p>A small YAML ledger tracks variables, conventions and section structure so notation on page 3 still makes sense on page 50.</p>
+          <div class="tech">page-to-page memory</div>
+        </div>
+        <div class="step">
+          <div class="num">05 · SANITISE</div>
+          <h4>Make it compile</h4>
+          <p>A post-pass scrubs the patterns that break Overleaf: stray code fences, banned macros, orphan TikZ, unbalanced math.</p>
+          <div class="tech">src/sanitize.py</div>
+        </div>
+        <div class="step">
+          <div class="num">06 · COMPILE</div>
+          <h4>Typeset to PDF</h4>
+          <p>All pages are assembled into one document with a proper preamble, cover page and TOC, then compiled with xelatex.</p>
+          <div class="tech">xelatex · LaTeX</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- § 04 — WHAT'S INSIDE ---------------------------------------- -->
+    <section class="about-section">
+      <p class="eyebrow">§ 04 · WHAT YOU GET</p>
+      <h2>Small details that matter</h2>
+      <div class="features">
+        <div class="feature">
+          <h4>Real LaTeX, not Markdown</h4>
+          <p>Proper <span class="mono">\section{}</span>, <span class="mono">\begin{equation}</span>, <span class="mono">\begin{tikzpicture}</span>. Edit it like any other LaTeX document.</p>
+        </div>
+        <div class="feature">
+          <h4>Cover page included</h4>
+          <p>Every output ships with a typeset titlepage (title, subject, author, credit) so you can hand it in as-is.</p>
+        </div>
+        <div class="feature">
+          <h4>Page-by-page cache</h4>
+          <p>Interrupted runs resume exactly where they stopped. You don't pay for the same page twice.</p>
+        </div>
+        <div class="feature">
+          <h4>Inter-page memory</h4>
+          <p>A notation defined on page 4 is still understood on page 47 — variables and conventions persist.</p>
+        </div>
+        <div class="feature">
+          <h4>Job history</h4>
+          <p>Every document is logged. Come back days later and the archive is still there with download links.</p>
+        </div>
+        <div class="feature">
+          <h4>Overleaf compatible</h4>
+          <p>The output compiles with both <span class="mono">xelatex</span> and <span class="mono">pdflatex</span> via an <span class="mono">iftex</span> conditional.</p>
+        </div>
+        <div class="feature">
+          <h4>Multi-model</h4>
+          <p>Eight models across OpenAI and Anthropic. Use <span class="mono">o4-mini</span> for cheap-and-good, Claude Opus for hard pages.</p>
+        </div>
+        <div class="feature">
+          <h4>No Mathpix needed</h4>
+          <p>Vision-direct mode lets the LLM OCR straight from images — no extra subscription, no extra API key.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- § 05 — FAQ ------------------------------------------------- -->
+    <section class="about-section faq">
+      <p class="eyebrow">§ 05 · FAQ</p>
+      <h2>Questions that come up</h2>
+
+      <details>
+        <summary>How much does it cost to process a document?</summary>
+        <p>
+          With <code>o4-mini</code> (the default), roughly <strong>$0.04 per page</strong>.
+          A 50-page lecture costs around <strong>$2</strong>. A 300-page textbook
+          chapter, around <strong>$12</strong>. Costs vary with page complexity
+          and image size — heavy figures and dense equations cost more than plain
+          text.
+        </p>
+      </details>
+
+      <details>
+        <summary>What happens to my PDF? Is it private?</summary>
+        <p>
+          Your file is uploaded to the server, sent to the chosen LLM provider
+          (OpenAI or Anthropic), and the output is stored locally on the server.
+          Uploads are auto-purged after <code>PALIMPSEST_UPLOAD_RETENTION_DAYS</code>
+          (default: 7 days). The hosted instance is for personal/educational use —
+          if you're working on something sensitive, self-host it. The whole
+          codebase is on GitHub.
+        </p>
+      </details>
+
+      <details>
+        <summary>Why LaTeX instead of just Word?</summary>
+        <p>
+          STEM content is full of equations, Greek letters, indices, integrals,
+          and matrix notation. LaTeX is the only output format that renders all
+          of that correctly without compromise. As a bonus, your hand-in will
+          look like it was typeset by a publisher.
+        </p>
+      </details>
+
+      <details>
+        <summary>What if my scan is really bad?</summary>
+        <p>
+          The pipeline degrades gracefully: even very degraded scans usually
+          produce a readable first pass, sometimes with a few transcription
+          errors. Use the slower but more accurate <code>claude-opus</code> or
+          <code>gpt-4.1</code> for rough scans. The page-by-page cache means you
+          can re-process individual pages without restarting the whole run.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I self-host this?</summary>
+        <p>
+          Yes. Clone the repo, fill in your API key in <code>config.yaml</code>,
+          run <code>python server.py</code>. There's also a Dockerfile + a
+          <code>docker-compose.yml</code> for a one-command deploy. See the
+          <a href="https://github.com/cmrabdu/Palimpsest" target="_blank" rel="noreferrer">README on GitHub</a>
+          for the full instructions.
+        </p>
+      </details>
+
+      <details>
+        <summary>What languages does it support?</summary>
+        <p>
+          The pipeline is currently optimised for <strong>French STEM</strong>
+          content (because that's what I needed it for as a student), but it
+          works with any Latin-script language the underlying LLM understands —
+          English, Spanish, Italian, German, etc. Multi-language UX is on the
+          roadmap.
+        </p>
+      </details>
+
+      <details>
+        <summary>Who built this?</summary>
+        <p>
+          A student called <a href="https://cmrabdu.com" target="_blank" rel="noreferrer">Abdullah Camur</a>
+          who got fed up with photocopied lecture notes. No company, no startup,
+          no monetisation. Just a tool that exists because it had to. Source on
+          <a href="https://github.com/cmrabdu/Palimpsest" target="_blank" rel="noreferrer">GitHub</a>,
+          MIT licensed.
+        </p>
+      </details>
+    </section>
+
+    <!-- CTA --------------------------------------------------------- -->
+    <div class="cta-block">
+      <h3>Ready to clean up a scan?</h3>
+      <p>
+        Drop a PDF on the workshop page. The pipeline takes a few minutes per
+        document — you'll get a live progress feed while it runs, and a clean
+        <code style="font-family:var(--mono);font-size:13px;background:rgba(241,231,208,0.1);padding:1px 5px;border-radius:3px;">.tex</code>
+        plus <code style="font-family:var(--mono);font-size:13px;background:rgba(241,231,208,0.1);padding:1px 5px;border-radius:3px;">.pdf</code>
+        at the end.
+      </p>
+      <div class="btns">
+        <a class="btn-primary" href="/">▷ open the workshop</a>
+        <a class="btn-secondary" href="https://github.com/cmrabdu/Palimpsest" target="_blank" rel="noreferrer">view source ↗</a>
+      </div>
+    </div>
+
+    <!-- FOOTER ------------------------------------------------------ -->
+    <footer style="margin-top: 48px; padding: 22px 0 0 60px; border-top: 1px solid rgba(91,79,58,0.25); font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.08em; display: flex; gap: 12px; flex-wrap: wrap;">
+      <span>made with ♥ by @cmrabdu</span>
+      <span>·</span>
+      <a class="footer-link" href="/">workshop</a>
+      <span>·</span>
+      <a class="footer-link" href="/jobs.html">archive</a>
+      <span>·</span>
+      <a class="footer-link" href="/brand.html">brand</a>
+      <span>·</span>
+      <a class="footer-link" href="https://github.com/cmrabdu/Palimpsest" target="_blank" rel="noreferrer">github ↗</a>
+      <span>·</span>
+      <a class="footer-link" href="https://cmrabdu.com" target="_blank" rel="noreferrer">cmrabdu.com</a>
+      <span style="margin-left: auto; font-family: var(--serif); font-style: italic; color: var(--ink-faint); font-size: 12px;">vol. iii · about</span>
+    </footer>
+  </div>
+</body>
+</html>

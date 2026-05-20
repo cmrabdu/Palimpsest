@@ -138,6 +138,11 @@ async def brand_page():
     return (BASE_DIR / "web/brand.html").read_text(encoding="utf-8")
 
 
+@app.get("/about.html", response_class=HTMLResponse)
+async def about_page():
+    return (BASE_DIR / "web/about.html").read_text(encoding="utf-8")
+
+
 @app.get("/favicon.svg")
 async def favicon_svg():
     return FileResponse(BASE_DIR / "web/brand/favicon.svg", media_type="image/svg+xml")
@@ -269,10 +274,23 @@ async def _process_job(job_id: str, pdf_path: str, model: str = "o4-mini", send_
         await broadcast(job_id, {"type": "done", "output": str(output), "has_pdf": output.suffix == ".pdf"})
     except Exception as e:
         logger.exception(f"Job {job_id} failed")
+        # Strip HTML noise (Cloudflare 5xx pages, gateway errors) for the UI
+        raw = str(e)
+        if "<html" in raw.lower() or "<!DOCTYPE" in raw:
+            if "502" in raw or "Bad Gateway" in raw:
+                clean = "LLM API gateway error (502) — please retry"
+            elif "503" in raw or "Service Unavailable" in raw:
+                clean = "LLM API temporarily unavailable (503) — please retry"
+            elif "504" in raw or "Gateway Timeout" in raw:
+                clean = "LLM API gateway timeout (504) — please retry"
+            else:
+                clean = "Upstream API error — please retry"
+        else:
+            clean = raw[:300]
         jobs[job_id]["status"] = "error"
-        jobs[job_id]["error"] = str(e)
+        jobs[job_id]["error"] = clean
         _save_job_to_db(job_id, jobs[job_id])
-        await broadcast(job_id, {"type": "error", "message": str(e)})
+        await broadcast(job_id, {"type": "error", "message": clean})
 
 
 @app.get("/api/jobs/list")

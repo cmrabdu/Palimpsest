@@ -287,6 +287,8 @@ function Footer({ count }) {
     <div className="jobs-footer">
       <span>made with ♥ by @cmrabdu</span>
       <span style={{ padding: '0 10px' }}>·</span>
+      <a href="/about.html" className="footer-link">about</a>
+      <span style={{ padding: '0 10px' }}>·</span>
       <a href="https://github.com/cmrabdu/Palimpsest" target="_blank" rel="noreferrer" className="footer-link">github ↗</a>
       <span style={{ padding: '0 10px' }}>·</span>
       <a href="https://cmrabdu.com" target="_blank" rel="noreferrer" className="footer-link">cmrabdu.com</a>

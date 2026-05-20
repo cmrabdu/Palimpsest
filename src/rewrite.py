@@ -1,8 +1,10 @@
 """Rewrite engine — supports Anthropic (Claude) and OpenAI (GPT/o-series) models."""
 
+import asyncio
 import base64
 import io
 import logging
+import random
 import re
 from enum import Enum
 
@@ -11,6 +13,56 @@ from PIL import Image
 from .context import DocumentContext
 
 logger = logging.getLogger(__name__)
+
+
+# ── Retry helper ────────────────────────────────────────
+#
+# LLM APIs (OpenAI, Anthropic) sit behind Cloudflare, which occasionally
+# returns 502/503/504 HTML pages on transient upstream issues. We retry
+# those with exponential backoff so a single blip doesn't halt a 50-page
+# pipeline mid-way.
+
+_TRANSIENT_STATUS = {408, 425, 429, 500, 502, 503, 504, 520, 521, 522, 524}
+
+
+async def _retry_api_call(coro_factory, *, what: str, attempts: int = 5):
+    """Run `coro_factory()` with exponential backoff on transient API errors.
+
+    Args:
+        coro_factory: zero-arg callable that returns a fresh awaitable.
+                      Must be a factory (not a coroutine) because each retry
+                      needs a new awaitable instance.
+        what: human-readable label for logging.
+        attempts: max attempts (1 = no retry).
+
+    Backoff: 1.5 ^ n + jitter, capped at 30 s.
+    """
+    last_exc: Exception | None = None
+    for n in range(attempts):
+        try:
+            return await coro_factory()
+        except Exception as exc:  # noqa: BLE001 - we re-raise on final attempt
+            status = getattr(exc, "status_code", None) or getattr(exc, "status", None)
+            transient = (
+                status in _TRANSIENT_STATUS
+                or "502" in str(exc)
+                or "503" in str(exc)
+                or "504" in str(exc)
+                or "Bad Gateway" in str(exc)
+                or "overloaded" in str(exc).lower()
+                or "timeout" in str(exc).lower()
+            )
+            last_exc = exc
+            if not transient or n == attempts - 1:
+                raise
+            wait = min(30.0, 1.5 ** n) + random.uniform(0, 0.5)
+            logger.warning(
+                f"{what} — transient error (attempt {n + 1}/{attempts}): "
+                f"{type(exc).__name__}: {str(exc)[:120]} — retrying in {wait:.1f}s"
+            )
+            await asyncio.sleep(wait)
+    if last_exc:
+        raise last_exc
 
 
 # ── Shared ───────────────────────────────────────────────
@@ -426,15 +478,18 @@ async def _rewrite_anthropic(
     else:
         sys_prompt = SYSTEM_PROMPT_NO_IMAGE
 
-    response = await client.messages.create(
-        model=model,
-        max_tokens=4096,
-        system=[{
-            "type": "text",
-            "text": sys_prompt,
-            "cache_control": {"type": "ephemeral"},
-        }],
-        messages=[{"role": "user", "content": content}],
+    response = await _retry_api_call(
+        lambda: client.messages.create(
+            model=model,
+            max_tokens=4096,
+            system=[{
+                "type": "text",
+                "text": sys_prompt,
+                "cache_control": {"type": "ephemeral"},
+            }],
+            messages=[{"role": "user", "content": content}],
+        ),
+        what=f"Anthropic p{context.page_number} ({model})",
     )
 
     usage = response.usage
@@ -512,7 +567,10 @@ async def _rewrite_openai(
     else:
         kwargs["max_tokens"] = 4096
 
-    response = await client.chat.completions.create(**kwargs)
+    response = await _retry_api_call(
+        lambda: client.chat.completions.create(**kwargs),
+        what=f"OpenAI p{context.page_number} ({model})",
+    )
 
     usage = response.usage
     logger.info(
