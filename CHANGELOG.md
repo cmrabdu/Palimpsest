@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- **Palimpsest cover blurb is now in English** — reads the same regardless of the document's working language.
+
+### Added
+- **`tests/`** — `pytest` suite covering the sanitizer (fence stripping, banned macro neutering, section-number rules, idempotency) and the document assembler. 31 tests, runs in <100 ms.
+- **Runtime hardening** (audit pass):
+  - `PALIMPSEST_API_TOKEN` env var → optional bearer-style auth on `/api/upload`.
+  - `PALIMPSEST_MAX_UPLOAD_MB` → hard size cap (default 60 MB) checked against `Content-Length` *and* enforced while streaming.
+  - `PALIMPSEST_ALLOWED_ORIGINS` → CSV allowlist on the WebSocket `Origin` header (defeats CSWSH).
+  - `PALIMPSEST_UPLOAD_RETENTION_DAYS` → auto-purges old uploads at server start.
+  - Magic-byte (`%PDF-`) check on every upload — rejects extension-only PDFs before they reach `pdf2image`.
+- `AUDIT.md` documenting the security / correctness pass.
+
+### Fixed
+- WebSocket disconnect no longer 500s when the socket has already been removed (`list.remove` → `try/except ValueError`).
+- `src/export.py` LaTeX-engine discovery: absolute paths via `Path.is_file()` first, then `shutil.which()` for `xelatex` / `pdflatex` on `$PATH` (Linux / Docker).
+- Dropped dead config flags from `config.example.yaml` (`preprocessing.enabled`, `rewrite.language`, `rewrite.output_style`, `output.format`, `output.generate_pdf`) — only fields the pipeline actually reads remain.
+- Removed dead `gen_pdf` read in `pipeline.py` (PDF was always generated regardless).
+
 ## [0.2.0] — 2026-05-20
 
 ### Added

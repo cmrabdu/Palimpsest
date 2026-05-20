@@ -1,52 +1,59 @@
 # ──────────────────────────────────────────────────────
 # Palimpsest — Configuration
-# Copy to config.yaml and fill in your API keys
+# Copy to config.yaml and fill in your API keys.
+# Every field below is actually read by the pipeline.
 # ──────────────────────────────────────────────────────
 
 api_keys:
   mathpix:
     app_id: ""
-    app_key: ""
+    app_key: ""              # only needed if extraction.engine = "mathpix"
   anthropic:
-    api_key: ""               # Required for Claude models
+    api_key: ""              # required for Claude models
   openai:
-    api_key: ""               # Required for GPT/o-series models
+    api_key: ""              # required for GPT / o-series models
 
-# ── Pipeline settings ─────────────────────────────────
+# ── Pipeline ──────────────────────────────────────────
 
 extraction:
-  dpi: 400                    # Image resolution for PDF → PNG
-  engine: "vision"            # "mathpix" (best quality) or "vision" (free, LLM does OCR)
+  dpi: 400                   # image resolution for PDF → PNG
+  engine: "vision"           # "vision" (LLM does OCR, no Mathpix) or "mathpix"
 
 preprocessing:
-  enabled: true
-  deskew: true                # Auto-correct page rotation
-  binarize: true              # Adaptive binarization for contrast
-  denoise: false              # Only enable for very noisy scans
+  deskew: true               # auto-correct page rotation (OpenCV)
+  binarize: true             # adaptive binarization for uneven lighting
+  denoise: false             # only enable for very noisy scans
 
 rewrite:
   # ── Supported models ──
   # Anthropic: claude-opus-4-20250514, claude-sonnet-4-20250514
   # OpenAI:    o4-mini (best value), gpt-4.1, gpt-4o, o1, gpt-4.1-mini, gpt-4.1-nano
-  model: "o4-mini"            # Best quality/price ratio
-  send_source_image: true     # Send original image for cross-reference verification
-  language: "fr"              # Document language
-  output_style: "academic"    # "academic" | "textbook" | "notes"
+  model: "o4-mini"
+  send_source_image: true    # send original image alongside OCR text
+
+# ── Output ────────────────────────────────────────────
 
 output:
-  format: "markdown"          # "markdown" | "latex" | "both"
-  merge_pages: true           # Merge all pages into one final document
-  generate_pdf: false         # Requires pandoc + texlive
+  merge_pages: true          # merge all pages into one final document
+  include_palimpsest_blurb: true  # cover-page credit + project URL
 
 # ── Performance ───────────────────────────────────────
 
 concurrency:
-  extraction_batch_size: 5    # Pages extracted in parallel
+  extraction_batch_size: 5   # pages OCR'd in parallel
   max_retries: 3
-  retry_delay: 2              # Seconds between retries
+  retry_delay: 2             # seconds between rewrite retries (exp. backoff)
 
 # ── Cache ─────────────────────────────────────────────
 
 cache:
-  enabled: true               # Resume interrupted runs
+  enabled: true              # resume interrupted runs
   directory: ".cache"
+
+# ──────────────────────────────────────────────────────
+# Optional runtime hardening (read from environment):
+#   PALIMPSEST_API_TOKEN          require this header on /api/upload
+#   PALIMPSEST_MAX_UPLOAD_MB      reject uploads above N MB (default 60)
+#   PALIMPSEST_ALLOWED_ORIGINS    csv allowlist for WebSocket Origin
+#   PALIMPSEST_UPLOAD_RETENTION_DAYS   purge uploads older than N days
+# ──────────────────────────────────────────────────────

@@ -92,7 +92,6 @@ async def run_pipeline(
     batch_size = config.get("concurrency", {}).get("extraction_batch_size", 5)
     cache_enabled = config.get("cache", {}).get("enabled", True)
     do_merge = config.get("output", {}).get("merge_pages", True)
-    gen_pdf = config.get("output", {}).get("generate_pdf", False)
 
     _base = Path(__file__).resolve().parent
     cache_base = _base / config.get("cache", {}).get("directory", ".cache")

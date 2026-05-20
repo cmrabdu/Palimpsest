@@ -8,14 +8,27 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-# Prefer xelatex (better Unicode/font support), fall back to pdflatex
-_LATEX_BINS = ["/Library/TeX/texbin/xelatex", "/Library/TeX/texbin/pdflatex", "xelatex", "pdflatex"]
+# Prefer xelatex (better Unicode/font support), fall back to pdflatex. Absolute
+# paths are checked first as a fast-path on macOS (BasicTeX / MacTeX); plain
+# names go through $PATH for Linux / Docker.
+_LATEX_BINS = (
+    "/Library/TeX/texbin/xelatex",
+    "/usr/local/texlive/2026basic/bin/universal-darwin/xelatex",
+    "/Library/TeX/texbin/pdflatex",
+    "xelatex",
+    "pdflatex",
+)
 
 
 def _find_latex() -> str | None:
     for binary in _LATEX_BINS:
-        if shutil.which(binary):
-            return binary
+        if binary.startswith("/"):
+            if Path(binary).is_file():
+                return binary
+        else:
+            resolved = shutil.which(binary)
+            if resolved:
+                return resolved
     return None
 
 

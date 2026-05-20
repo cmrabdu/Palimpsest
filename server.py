@@ -3,12 +3,14 @@
 import asyncio
 import json
 import logging
+import os
+import time
 import uuid
 from datetime import datetime
 from pathlib import Path
 
 import yaml
-from fastapi import FastAPI, File, Form, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, File, Form, Header, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -18,6 +20,24 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger("palimpsest.server")
 
 BASE_DIR = Path(__file__).resolve().parent
+
+# ── Hardening knobs (env-driven so deploys can lock down without code changes)
+
+# Reject uploads above N megabytes (before we read the body). Default 60 MB —
+# matches the UI hint. Set to 0 to disable.
+MAX_UPLOAD_MB = int(os.environ.get("PALIMPSEST_MAX_UPLOAD_MB", "60"))
+
+# If set, /api/upload requires `X-Palimpsest-Token: <value>`. Lets you expose
+# the server on a public URL without burning paid API credits to strangers.
+API_TOKEN = os.environ.get("PALIMPSEST_API_TOKEN", "").strip()
+
+# Comma-separated allowlist of Origin values accepted on the WebSocket. Empty
+# means "accept anything" (development default).
+_origins_raw = os.environ.get("PALIMPSEST_ALLOWED_ORIGINS", "").strip()
+ALLOWED_ORIGINS = {o.strip() for o in _origins_raw.split(",") if o.strip()}
+
+# Auto-purge upload files older than N days on startup.
+UPLOAD_RETENTION_DAYS = int(os.environ.get("PALIMPSEST_UPLOAD_RETENTION_DAYS", "7"))
 
 app = FastAPI(title="Palimpsest", version="0.1.0")
 
@@ -69,6 +89,29 @@ def _save_job_to_db(job_id: str, job_data: dict):
 jobs = _load_jobs_db()
 
 
+def _purge_old_uploads(days: int = UPLOAD_RETENTION_DAYS) -> None:
+    """Remove upload files older than `days` to keep the disk bounded."""
+    if days <= 0:
+        return
+    upload_dir = BASE_DIR / "uploads"
+    if not upload_dir.exists():
+        return
+    cutoff = time.time() - days * 86400
+    purged = 0
+    for f in upload_dir.iterdir():
+        try:
+            if f.is_file() and f.stat().st_mtime < cutoff:
+                f.unlink()
+                purged += 1
+        except OSError:
+            continue
+    if purged:
+        logger.info(f"Purged {purged} upload(s) older than {days}d")
+
+
+_purge_old_uploads()
+
+
 async def broadcast(job_id: str, data: dict):
     """Send progress update to all connected clients for a job."""
     for ws in websockets.get(job_id, []):
@@ -108,14 +151,32 @@ async def favicon_ico():
 
 @app.post("/api/upload")
 async def upload_pdf(
+    request: Request,
     file: UploadFile = File(...),
     model: str = Form("o4-mini"),
     send_image: str = Form("true"),
     engine: str = Form("vision"),
+    x_palimpsest_token: str | None = Header(None),
 ):
-    """Upload a PDF and start processing."""
+    """Upload a PDF and start processing.
+
+    Optional auth: if `PALIMPSEST_API_TOKEN` is set, requests must carry
+    a matching `X-Palimpsest-Token` header.
+    """
+    # ── Auth gate (optional) ───────────────────────────────────────
+    if API_TOKEN:
+        if not x_palimpsest_token or x_palimpsest_token != API_TOKEN:
+            raise HTTPException(status_code=401, detail="Invalid or missing API token.")
+
+    # ── Filename + extension check ─────────────────────────────────
     if not file.filename or not file.filename.lower().endswith(".pdf"):
         return {"error": "Only PDF files are accepted."}
+
+    # ── Size cap (read Content-Length when present) ────────────────
+    if MAX_UPLOAD_MB > 0:
+        cl_hdr = request.headers.get("content-length")
+        if cl_hdr and cl_hdr.isdigit() and int(cl_hdr) > MAX_UPLOAD_MB * 1024 * 1024:
+            return {"error": f"File exceeds {MAX_UPLOAD_MB} MB limit."}
 
     job_id = str(uuid.uuid4())[:8]
     upload_dir = BASE_DIR / "uploads"
@@ -124,7 +185,26 @@ async def upload_pdf(
     # Save uploaded file
     safe_name = Path(file.filename).name  # sanitize
     pdf_path = upload_dir / f"{job_id}_{safe_name}"
-    content = await file.read()
+
+    # Stream-read with a hard cap (defends against missing/incorrect
+    # Content-Length headers).
+    cap = MAX_UPLOAD_MB * 1024 * 1024 if MAX_UPLOAD_MB > 0 else None
+    chunks: list[bytes] = []
+    total = 0
+    while True:
+        chunk = await file.read(1 << 20)  # 1 MiB
+        if not chunk:
+            break
+        total += len(chunk)
+        if cap is not None and total > cap:
+            return {"error": f"File exceeds {MAX_UPLOAD_MB} MB limit."}
+        chunks.append(chunk)
+    content = b"".join(chunks)
+
+    # Magic-byte check — reject anything that isn't a real PDF.
+    if not content.startswith(b"%PDF-"):
+        return {"error": "Not a valid PDF (missing %PDF- header)."}
+
     pdf_path.write_bytes(content)
 
     jobs[job_id] = {
@@ -268,6 +348,13 @@ async def download_result(job_id: str, fmt: str = "auto"):
 @app.websocket("/ws/{job_id}")
 async def ws_progress(websocket: WebSocket, job_id: str):
     """WebSocket endpoint for real-time progress updates."""
+    # Optional Origin allowlist (defends against cross-site WS hijacking)
+    if ALLOWED_ORIGINS:
+        origin = websocket.headers.get("origin", "")
+        if origin and origin not in ALLOWED_ORIGINS:
+            await websocket.close(code=4403)
+            return
+
     await websocket.accept()
     websockets.setdefault(job_id, []).append(websocket)
 
@@ -279,7 +366,13 @@ async def ws_progress(websocket: WebSocket, job_id: str):
         while True:
             await websocket.receive_text()  # Keep alive
     except WebSocketDisconnect:
-        websockets.get(job_id, []).remove(websocket)
+        pass
+    finally:
+        # Defensive: removing a socket that's already gone shouldn't 500.
+        try:
+            websockets.get(job_id, []).remove(websocket)
+        except ValueError:
+            pass
 
 
 # ── Main ─────────────────────────────────────────────────

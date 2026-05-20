@@ -110,8 +110,18 @@ Drop your PDF, pick a model, hit Start. Watch page-by-page progress in real time
 
 - **`/`** — Upload a PDF and track real-time processing
 - **`/jobs.html`** — History of all processed documents (with download links)
+- **`/brand.html`** — Brand kit (logo, mark, favicons, OG image, banner)
 
+##### Optional hardening (env vars)
 
+When you expose the server beyond localhost, set:
+
+| Variable | Effect |
+|----------|--------|
+| `PALIMPSEST_API_TOKEN` | If set, `/api/upload` requires header `X-Palimpsest-Token: <value>`. Stops strangers from burning your API credits. |
+| `PALIMPSEST_MAX_UPLOAD_MB` | Reject uploads above N megabytes (default `60`). |
+| `PALIMPSEST_ALLOWED_ORIGINS` | CSV allowlist for the WebSocket `Origin` header. |
+| `PALIMPSEST_UPLOAD_RETENTION_DAYS` | Auto-purge old upload files (default `7`). |
 
 #### Command line
 

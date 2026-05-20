@@ -84,15 +84,16 @@ LATEX_PREAMBLE = r"""\documentclass[12pt,a4paper]{report}
 """
 
 
-# Default Palimpsest cover-page blurb. Inserted after the title block, before
-# the table of contents. The text is intentionally generic — we do not assume
-# the source is a physics course.
+# Default Palimpsest cover-page blurb. Inserted on the titlepage before the
+# table of contents. The text is intentionally generic — we do not assume
+# the source is a physics course, and the wording stays in English so the
+# blurb reads the same regardless of the document's working language.
 PALIMPSEST_BLURB = (
-    r"Ce document est une retranscription et mise au propre d'un support "
-    r"original difficilement lisible. Le texte, les équations et les schémas "
-    r"ont été repris et structurés à l'aide de \textbf{Palimpsest}, un "
-    r"logiciel open source combinant OCR, contexte LLM et reconnaissance "
-    r"visuelle par OpenCV, développé par Abdullah Camur."
+    r"This document is a clean retranscription of a hard-to-read original "
+    r"source. The text, equations and figures have been recovered and "
+    r"restructured with \textbf{Palimpsest}, an open-source tool combining "
+    r"OCR, LLM context tracking and OpenCV-based visual recognition, built "
+    r"by Abdullah Camur."
 )
 
 PALIMPSEST_URL = "https://github.com/cmrabdu/Palimpsest"
@@ -113,7 +114,7 @@ def _titlepage(
     lines.append(r"\begin{titlepage}")
     lines.append(r"\centering")
     lines.append(r"\vspace*{2cm}")
-    lines.append(r"{\Large\itshape Retranscription et mise au propre\par}")
+    lines.append(r"{\Large\itshape Clean retranscription\par}")
     lines.append(r"\vspace{1.5cm}")
     lines.append(r"{\Huge\bfseries " + safe_title + r"\par}")
     if safe_subtitle:
@@ -132,7 +133,7 @@ def _titlepage(
         lines.append(PALIMPSEST_BLURB)
         lines.append(r"\par\vspace{0.6em}")
         lines.append(
-            r"\normalfont\small Logiciel : \textbf{Palimpsest} "
+            r"\normalfont\small Software: \textbf{Palimpsest} "
             r"\textendash{} \url{" + PALIMPSEST_URL + r"}"
         )
         lines.append(r"\end{minipage}")
